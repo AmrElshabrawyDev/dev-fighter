@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "title": "Dev Fighter — CSS challenges for front-end developers",
+    "description": "Recreate the target with HTML & CSS. Closest match with the shortest code wins. Shape and real UI challenges, learning tracks, and live battles."
+  },
+  "nav": {
+    "home": "Home",
+    "challenges": "Challenges",
+    "tracks": "Tracks",
+    "battles": "Battles",
+    "leaderboard": "Leaderboard",
+    "signIn": "Sign in",
+    "signOut": "Sign out",
+    "soon": "Soon",
+    "switchTo": "العربية",
+    "menu": "Menu"
+  },
+  "home": {
+    "eyebrow": "The Arabic-first CSS battle arena",
+    "titleStart": "Draw the target with code.",
+    "titleEnd": "Closest match, shortest code wins.",
+    "subtitle": "Shape and real-UI challenges you solve with HTML & CSS. Your result is compared with the target pixel by pixel — then you climb the leaderboard against developers everywhere.",
+    "ctaPrimary": "Start your first challenge",
+    "ctaSecondary": "How it works",
+    "demo": {
+      "target": "Target",
+      "yourCode": "Your code",
+      "match": "Match",
+      "chars": "chars"
+    },
+    "how": {
+      "title": "How it works",
+      "steps": [
+        { "title": "See the target", "text": "A shape or a piece of UI, with the exact colours it uses." },
+        { "title": "Write HTML & CSS", "text": "A code editor next to a live preview, and a slider to compare your result with the target." },
+        { "title": "Score points", "text": "The closer you get to a perfect match — with shorter code — the higher you rank." }
+      ]
+    },
+    "types": {
+      "title": "Two kinds of challenges",
+      "shapes": { "title": "Shapes", "text": "Visual puzzles made of simple shapes on a 400×300 canvas — a great way to think in CSS." },
+      "components": { "title": "Real UI", "text": "Rebuild a button, a card or a navbar the way you see them on real sites — the skill you use at work." }
+    },
+    "learn": {
+      "title": "Learn while you play",
+      "items": [
+        { "title": "Learning tracks", "text": "From easy to hard — every challenge teaches a new property." },
+        { "title": "Hints", "text": "Stuck? Open a hint for a small share of the points." },
+        { "title": "Explained solutions", "text": "After you solve it, read how the best solutions work and pick up new tricks." }
+      ]
+    },
+    "battles": {
+      "badge": "Coming soon",
+      "title": "Live 1v1 battles",
+      "text": "Same challenge, same timer, and your opponent's match % moving in front of you. Who reaches the target first?"
+    },
+    "final": {
+      "title": "Ready to fight?",
+      "text": "Sign in with GitHub or Google and start for free."
+    }
+  },
+  "challenges": {
+    "title": "Challenges",
+    "subtitle": "The first set of challenges. The editor and scoring arrive in the next stage.",
+    "soonNotice": "Playing opens soon — we're building the code editor and the matching engine now.",
+    "play": "Play",
+    "shape": "Shape",
+    "component": "UI",
+    "difficulty": { "easy": "Easy", "medium": "Medium", "hard": "Hard" }
+  },
+  "login": {
+    "title": "Enter the arena",
+    "subtitle": "Sign in to save your solutions and join the leaderboard.",
+    "github": "Continue with GitHub",
+    "google": "Continue with Google",
+    "notConfigured": "Sign-in isn't enabled on this deployment yet.",
+    "error": "Sign-in failed. Please try again.",
+    "terms": "By signing in you agree to the terms of use."
+  },
+  "footer": {
+    "tagline": "CSS challenges for front-end developers.",
+    "builtBy": "Built by",
+    "openSource": "Open source on GitHub"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "back": "Back home"
+  }
+}

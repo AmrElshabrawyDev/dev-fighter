@@ -133,7 +133,7 @@ Row-level security: anyone can read published challenges, profiles and leaderboa
 
 ## 8. Release 1 milestones
 
-1. **Skeleton** — Next.js app, Arabic/English + RTL/LTR, design system, Supabase auth
+1. ✅ **Skeleton** — Next.js app, Arabic/English + RTL/LTR, design system, Supabase auth
 2. **Challenge engine** — editor, sandboxed preview, target, compare slider, live accuracy
 3. **Official scoring** — server render + pixel diff, submissions, best scores, leaderboards
 4. **Content & learning** — 20–30 challenges, tracks, hints, explanations, daily challenge
@@ -146,4 +146,4 @@ Row-level security: anyone can read published challenges, profiles and leaderboa
 1. You picked "Something else" as a differentiator — what is it?
 2. Domain name? (e.g. devfighter.dev / devfighter.io — check availability)
 3. Supabase project: you create it (free) and share the URL + anon key via environment variables — never in the repo
-4. Visual identity: reuse your brand colours (#89b4fa blue, dark theme) or a separate look for Dev Fighter?
+4. ~~Visual identity~~ → decided: Amr Elshabrawy's brand colours (Catppuccin Neon Powerline)
