@@ -71,6 +71,7 @@ export function CodeEditor({ value, onChange, label }: Props) {
           basicSetup,
           keymap.of([indentWithTab]), // Esc then Tab still moves focus out
           html(),
+          EditorView.lineWrapping, // long one-line solutions wrap instead of scrolling sideways
           theme,
           syntaxHighlighting(highlight),
           EditorView.contentAttributes.of({ "aria-label": label }),
