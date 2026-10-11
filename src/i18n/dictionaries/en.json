@@ -31,22 +31,46 @@
     "how": {
       "title": "How it works",
       "steps": [
-        { "title": "See the target", "text": "A shape or a piece of UI, with the exact colours it uses." },
-        { "title": "Write HTML & CSS", "text": "A code editor next to a live preview, and a slider to compare your result with the target." },
-        { "title": "Score points", "text": "The closer you get to a perfect match — with shorter code — the higher you rank." }
+        {
+          "title": "See the target",
+          "text": "A shape or a piece of UI, with the exact colours it uses."
+        },
+        {
+          "title": "Write HTML & CSS",
+          "text": "A code editor next to a live preview, and a slider to compare your result with the target."
+        },
+        {
+          "title": "Score points",
+          "text": "The closer you get to a perfect match — with shorter code — the higher you rank."
+        }
       ]
     },
     "types": {
       "title": "Two kinds of challenges",
-      "shapes": { "title": "Shapes", "text": "Visual puzzles made of simple shapes on a 400×300 canvas — a great way to think in CSS." },
-      "components": { "title": "Real UI", "text": "Rebuild a button, a card or a navbar the way you see them on real sites — the skill you use at work." }
+      "shapes": {
+        "title": "Shapes",
+        "text": "Visual puzzles made of simple shapes on a 400×300 canvas — a great way to think in CSS."
+      },
+      "components": {
+        "title": "Real UI",
+        "text": "Rebuild a button, a card or a navbar the way you see them on real sites — the skill you use at work."
+      }
     },
     "learn": {
       "title": "Learn while you play",
       "items": [
-        { "title": "Learning tracks", "text": "From easy to hard — every challenge teaches a new property." },
-        { "title": "Hints", "text": "Stuck? Open a hint for a small share of the points." },
-        { "title": "Explained solutions", "text": "After you solve it, read how the best solutions work and pick up new tricks." }
+        {
+          "title": "Learning tracks",
+          "text": "From easy to hard — every challenge teaches a new property."
+        },
+        {
+          "title": "Hints",
+          "text": "Stuck? Open a hint for a small share of the points."
+        },
+        {
+          "title": "Explained solutions",
+          "text": "After you solve it, read how the best solutions work and pick up new tricks."
+        }
       ]
     },
     "battles": {
@@ -61,12 +85,41 @@
   },
   "challenges": {
     "title": "Challenges",
-    "subtitle": "The first set of challenges. The editor and scoring arrive in the next stage.",
-    "soonNotice": "Playing opens soon — we're building the code editor and the matching engine now.",
+    "subtitle": "Pick a challenge and start. Your match updates live as you type.",
     "play": "Play",
     "shape": "Shape",
     "component": "UI",
-    "difficulty": { "easy": "Easy", "medium": "Medium", "hard": "Hard" }
+    "difficulty": {
+      "easy": "Easy",
+      "medium": "Medium",
+      "hard": "Hard"
+    }
+  },
+  "play": {
+    "back": "All challenges",
+    "metaDescription": "“{title}”: recreate the target with HTML & CSS and watch your match update live.",
+    "editor": "Your code",
+    "editorLabel": "Code editor: HTML and CSS",
+    "chars": "chars",
+    "reset": "Start over",
+    "resetConfirm": "Your current code will be replaced with the starter code. Continue?",
+    "output": "Output",
+    "compareLabel": "Compare mode",
+    "slide": "Compare",
+    "diff": "Diff",
+    "slideHint": "Move over the output, or use the slider, to reveal the target",
+    "diffHint": "Red: pixels that differ from the target. Yellow: soft edges, not counted.",
+    "diffLabel": "Difference between your output and the target",
+    "target": "Target",
+    "targetAlt": "The image to recreate",
+    "colors": "Colours used (click to copy)",
+    "copy": "Copy colour",
+    "copied": "Copied",
+    "match": "Match",
+    "estimate": "Instant estimate in your browser while you type. Official scoring and leaderboards come next.",
+    "perfect": "Perfect match! Now try making your code shorter.",
+    "unsupported": "This browser can't measure the match live. Try Chrome, Edge or Firefox.",
+    "submitSoon": "Submit — coming soon"
   },
   "login": {
     "title": "Enter the arena",

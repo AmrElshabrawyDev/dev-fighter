@@ -3,7 +3,7 @@
 > Recreate the target with HTML & CSS. Closest match with the shortest code wins.
 > Arabic-first, real UI challenges, and live 1v1 battles.
 
-Status: **draft for review** — nothing is built yet. Open questions are at the end.
+Status: **in progress** — stages 1 and 2 are built (see milestones). Open questions are at the end.
 
 ---
 
@@ -56,7 +56,7 @@ Every challenge is defined by a **reference solution** (HTML + CSS written by th
 | `track` | optional — position inside a learning track |
 | `colors` | the exact colours used, shown to the player (like cssbattle) |
 | `reference_html` | the author's solution — never sent to the browser before solving |
-| `target_png` | rendered from the reference, stored in Supabase Storage |
+| `target_png` | rendered from the reference (`npm run targets`, headless Chromium); in the repo for now, Supabase Storage later |
 | `hints` | 1–3 hints, each costs points when opened |
 | `explanation` | Arabic + English write-up, unlocked after solving |
 | `published_at` / `daily_date` | scheduling |
@@ -76,7 +76,7 @@ Every challenge is defined by a **reference solution** (HTML + CSS written by th
 4. A player's best submission per challenge counts; ties broken by earlier time
 
 **Two layers so scores can be trusted:**
-- *While typing:* an instant estimate in the browser (preview rendered to canvas, compared locally)
+- *While typing:* an instant estimate in the browser (preview rendered to canvas through SVG `<foreignObject>`, compared locally with `pixelmatch` against the target PNG)
 - *On submit:* the **official** score is computed on the server in headless Chromium. Only this one reaches the leaderboard.
 
 **Sandbox rules for player code:** no JavaScript, no network. The preview runs in a sandboxed iframe with a strict CSP (`default-src 'none'; style-src 'unsafe-inline'; img-src data:`), so nobody can load the target image or call home.
@@ -134,7 +134,7 @@ Row-level security: anyone can read published challenges, profiles and leaderboa
 ## 8. Release 1 milestones
 
 1. ✅ **Skeleton** — Next.js app, Arabic/English + RTL/LTR, design system, Supabase auth
-2. **Challenge engine** — editor, sandboxed preview, target, compare slider, live accuracy
+2. ✅ **Challenge engine** — editor, sandboxed preview, target, compare slider + diff view, live accuracy, drafts saved per challenge
 3. **Official scoring** — server render + pixel diff, submissions, best scores, leaderboards
 4. **Content & learning** — 20–30 challenges, tracks, hints, explanations, daily challenge
 5. **Polish & launch** — profiles, SEO/OG images, performance, deploy

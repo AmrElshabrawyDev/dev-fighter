@@ -4,11 +4,11 @@
 
 An Arabic-first CSS challenge platform — shape and real UI-component challenges, learning tracks, and (soon) live 1v1 battles.
 
-> 🚧 Release 1 in progress — stage 1 (skeleton) is done. See the product spec: [docs/SPEC.md](docs/SPEC.md)
+> 🚧 Release 1 in progress — stages 1 (skeleton) and 2 (challenge engine) are done. See the product spec: [docs/SPEC.md](docs/SPEC.md)
 
 ## Stack
 
-Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind CSS 4 · Supabase (auth, Postgres) · Arabic (RTL, default) + English
+Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind CSS 4 · CodeMirror 6 · pixelmatch · Supabase (auth, Postgres) · Arabic (RTL, default) + English
 
 ## Run it locally
 
@@ -20,6 +20,21 @@ npm run dev                   # http://localhost:3000 → redirects to /ar or /e
 
 Without Supabase keys the whole site works; the sign-in page just says sign-in isn't enabled yet.
 
+## How the live match works
+
+1. Every challenge has a **reference solution**. `npm run targets` renders each one in headless Chromium to `public/targets/<slug>.png`, so the browser only ever gets the image, never the reference code.
+2. While you type, your code is laid out in a hidden sandboxed iframe (scripts off, every request blocked), drawn onto a canvas through an SVG `<foreignObject>`, and compared with the target pixel by pixel using `pixelmatch`. In Chromium this render matches a real screenshot exactly.
+3. The result is an instant **estimate**. Official scores will be computed on the server (stage 3).
+
+## Adding or changing a challenge
+
+1. Edit `src/data/challenge-list.ts` (list every colour the reference uses).
+2. Render the targets — needs Node 22.18+ and Playwright's Chromium once (`npx playwright install chromium`):
+   ```bash
+   npm run targets
+   ```
+3. Commit the PNGs and `src/data/targets.json` with your change. The build fails if a target is missing or out of date.
+
 ## Project map
 
 | Path | What it is |
@@ -29,7 +44,12 @@ Without Supabase keys the whole site works; the sign-in page just says sign-in i
 | `src/proxy.ts` | Sends visitors to their language and refreshes the Supabase session |
 | `src/app/auth/` | OAuth callback and sign-out |
 | `src/lib/supabase/` | Supabase clients (server and browser) |
-| `src/data/challenges.ts` | Launch challenges — each target is rendered from its reference solution |
-| `src/components/TargetPreview.tsx` | Renders challenge code in a sandboxed iframe (no scripts, no network) |
+| `src/data/challenge-list.ts` | Launch challenges and their reference solutions |
+| `src/data/challenges.ts` | Server-side access + build-time checks; the browser gets challenges without the reference |
+| `scripts/render-targets.mjs` | `npm run targets` — renders each reference to its target PNG |
+| `src/app/[lang]/challenges/[slug]/` | The challenge page |
+| `src/components/play/` | Editor (CodeMirror), live preview, compare slider, diff view, match meter |
+| `src/lib/match/` | The preview document (CSP sandbox) and the in-browser match engine |
+| `src/lib/drafts.ts` | Keeps your code per challenge in localStorage |
 
 Built by [Amr Elshabrawy](https://amrelshabrawydev.github.io).

@@ -1,15 +1,15 @@
 import Link from "next/link";
-import { TargetPreview } from "@/components/TargetPreview";
-import { challenges } from "@/data/challenges";
+import { TargetImage } from "@/components/TargetImage";
+import { challenges, toPublic } from "@/data/challenges";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
 
-const demo = challenges.find((c) => c.slug === "twin-moons")!;
+const demo = toPublic(challenges.find((c) => c.slug === "twin-moons")!);
 
 export default async function Home() {
   const locale = await getLocale();
   const { home } = await getDictionary();
-  const shape = challenges.find((c) => c.type === "shape" && c.difficulty === "medium")!;
-  const component = challenges.find((c) => c.slug === "profile-card")!;
+  const shape = toPublic(challenges.find((c) => c.type === "shape" && c.difficulty === "medium")!);
+  const component = toPublic(challenges.find((c) => c.slug === "profile-card")!);
 
   return (
     <>
@@ -30,7 +30,7 @@ export default async function Home() {
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-text-secondary">{home.subtitle}</p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
-                href={`/${locale}/challenges`}
+                href={`/${locale}/challenges/${challenges[0].slug}`}
                 className="rounded-lg bg-primary px-6 py-3 font-bold text-on-primary shadow-[0_8px_30px_-8px] shadow-primary/60 transition hover:brightness-110"
               >
                 {home.ctaPrimary}
@@ -82,7 +82,7 @@ export default async function Home() {
                 </div>
                 <div>
                   <p className="mb-2 text-xs text-text-tertiary" dir="auto">{home.demo.target}</p>
-                  <TargetPreview challenge={demo} size={200} label={demo.title.en} />
+                  <TargetImage challenge={demo} size={200} label={demo.title.en} />
                 </div>
               </div>
               <div className="border-t border-border-subtle px-4 py-3">
@@ -124,7 +124,7 @@ export default async function Home() {
             { info: home.types.components, challenge: component, color: "text-secondary" },
           ].map(({ info, challenge, color }) => (
             <article key={info.title} className="flex flex-col gap-5 rounded-xl border border-border-subtle bg-bg-elevated p-6 sm:flex-row sm:items-center">
-              <TargetPreview challenge={challenge} size={180} label={challenge.title[locale]} />
+              <TargetImage challenge={challenge} size={180} label={challenge.title[locale]} />
               <div>
                 <h3 className={`mb-2 text-xl font-bold ${color}`}>{info.title}</h3>
                 <p className="leading-relaxed text-text-secondary">{info.text}</p>
