@@ -74,7 +74,7 @@ test("unknown pages show the 404 page", async ({ page, consoleErrors }) => {
 test.describe("on a phone", () => {
   test.use({ viewport: { width: 390, height: 844 }, hasTouch: true });
 
-  for (const path of ["/ar", "/en", "/ar/challenges", `/ar/challenges/${challenges[0].slug}`, "/ar/tips", "/ar/login"]) {
+  for (const path of ["/ar", "/en", "/ar/challenges", `/ar/challenges/${challenges[0].slug}`, "/ar/tips", "/ar/leaderboard", "/ar/login"]) {
     test(`${path} fits the screen without sideways scrolling`, async ({ page }) => {
       await page.goto(path);
       await page.waitForLoadState("networkidle");

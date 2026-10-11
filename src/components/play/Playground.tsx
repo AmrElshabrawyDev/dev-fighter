@@ -7,9 +7,18 @@ import type { Dictionary } from "@/i18n/get-dictionary";
 import { useDraft } from "@/lib/drafts";
 import { previewDocument } from "@/lib/match/document";
 import { compare, formatAccuracy, loadTarget, renderCode, type Match } from "@/lib/match/engine";
+import { countChars, scoreFor } from "@/lib/scoring/score";
 import { CodeEditor } from "./CodeEditor";
+import { SubmitPanel } from "./SubmitPanel";
 
-type Props = { challenge: PublicChallenge; t: Dictionary["play"]; tipsHref: string };
+type Props = {
+  challenge: PublicChallenge;
+  t: Dictionary["play"];
+  tipsHref: string;
+  loginHref: string;
+  /** official submissions are set up on this server */
+  canSubmit: boolean;
+};
 type Mode = "slide" | "diff";
 
 /** The largest size a canvas is shown at; bigger challenges are scaled down */
@@ -25,7 +34,7 @@ const starterCode = (color: string) => `<div></div>
 </style>
 `;
 
-export function Playground({ challenge, t, tipsHref }: Props) {
+export function Playground({ challenge, t, tipsHref, loginHref, canSubmit }: Props) {
   const { width, height } = challenge;
   const starter = starterCode(challenge.colors[1] ?? challenge.colors[0]);
 
@@ -96,6 +105,7 @@ export function Playground({ challenge, t, tipsHref }: Props) {
   const splitPx = split === null ? 0 : Math.round(split * (vertical ? height : width));
   const at = (fraction: number) => `${fraction * 100}%`;
 
+  const chars = countChars(code);
   const accuracy = match ? formatAccuracy(match.accuracy) : null;
   const perfect = match?.accuracy === 1;
   const barColor = !match
@@ -116,7 +126,7 @@ export function Playground({ challenge, t, tipsHref }: Props) {
           <h2 className="text-sm font-bold">{t.editor}</h2>
           <div className="flex items-center gap-3 text-xs text-text-tertiary">
             <span>
-              <span className="font-mono text-text-secondary">{code.length}</span> {t.chars}
+              <span className="font-mono text-text-secondary">{chars}</span> {t.chars}
             </span>
             <button type="button" onClick={reset} className="rounded px-2 py-1 transition hover:bg-bg-surface hover:text-text-primary">
               {t.reset}
@@ -138,9 +148,15 @@ export function Playground({ challenge, t, tipsHref }: Props) {
                 {unsupported ? "—" : accuracy === null ? "…" : `${accuracy}%`}
               </p>
             </div>
+            <div className="text-center">
+              <p className="text-sm text-text-secondary">{t.estimatedScore}</p>
+              <p data-testid="estimated-score" className="font-mono text-xl font-bold text-gold" dir="ltr">
+                {match ? scoreFor(match.accuracy, chars, challenge.par) : "…"}
+              </p>
+            </div>
             <div className="text-end">
               <p className="text-sm text-text-secondary">{t.chars}</p>
-              <p data-testid="chars" className="font-mono text-xl font-bold" dir="ltr">{code.length}</p>
+              <p data-testid="chars" className="font-mono text-xl font-bold" dir="ltr">{chars}</p>
             </div>
           </div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-bg-surface" dir="ltr">
@@ -152,9 +168,8 @@ export function Playground({ challenge, t, tipsHref }: Props) {
               {t.tipsLink}
             </Link>
           </p>
-          <button type="button" disabled className="mt-3 w-full cursor-not-allowed rounded-lg bg-bg-surface py-2.5 text-sm font-bold text-text-tertiary">
-            {t.submitSoon}
-          </button>
+          <p className="mt-1 text-xs text-text-tertiary">{t.par.replace("{par}", String(challenge.par))}</p>
+          <SubmitPanel slug={challenge.slug} code={code} enabled={canSubmit} loginHref={loginHref} t={t} />
         </section>
         <Panel
           title={t.output}

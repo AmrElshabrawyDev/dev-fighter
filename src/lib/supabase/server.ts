@@ -1,11 +1,15 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { isSupabaseConfigured, supabaseKey, supabaseUrl } from "./config";
 
 /** Supabase client for Server Components, Route Handlers and Server Actions */
 export async function createClient() {
   if (!isSupabaseConfigured) return null;
+  // The Supabase client reads the clock in the background (its auth listener).
+  // Under partial prefetching that's only allowed at request time, so wait for it.
+  await connection();
   const cookieStore = await cookies();
   return createServerClient(supabaseUrl, supabaseKey, {
     cookies: {

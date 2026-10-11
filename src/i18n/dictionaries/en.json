@@ -121,8 +121,30 @@
     "estimate": "Instant estimate in your browser while you type. Official scoring and leaderboards come next.",
     "perfect": "Perfect match! Now try making your code shorter.",
     "unsupported": "This browser can't measure the match live. Try Chrome, Edge or Firefox.",
-    "submitSoon": "Submit — coming soon",
-    "tipsLink": "Tips for shorter code"
+    "tipsLink": "Tips for shorter code",
+    "submit": "Submit",
+    "submitting": "Scoring…",
+    "signInToSubmit": "Sign in to submit",
+    "submitDisabled": "Submitting isn't enabled on this copy",
+    "estimatedScore": "Estimated score",
+    "par": "The author's solution is {par} chars: match it or go shorter for the full length bonus.",
+    "official": "Official result",
+    "points": "points",
+    "newBest": "New personal best!",
+    "yourBest": "Your best: {score} points ({chars} chars)",
+    "rank": "Your rank on this challenge: #{rank}",
+    "errors": {
+      "sign-in": "Your session ended. Please sign in again.",
+      "rate-limited": "Wait 5 seconds between submissions.",
+      "too-long": "Your code is longer than 10,000 characters.",
+      "unknown-challenge": "This challenge doesn't exist.",
+      "not-configured": "Submitting isn't enabled on this copy.",
+      "failed": "Couldn't score your solution. Please try again."
+    },
+    "topPlayers": "Top players on this challenge",
+    "noScores": "No scores yet. Be the first to solve it!",
+    "fullLeaderboard": "Full leaderboard",
+    "scoreLabel": "Score"
   },
   "tips": {
     "title": "Tips & tricks for shorter code",
@@ -139,6 +161,28 @@
     "ctaTitle": "Try them now",
     "ctaText": "Pick a challenge, reach 100%, then start shortening your code.",
     "ctaButton": "Go to challenges"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "subtitle": "Each player's best score on every challenge, added up.",
+    "metaDescription": "The top front-end developers in Dev Fighter's CSS challenges.",
+    "rank": "#",
+    "player": "Player",
+    "score": "Score",
+    "perfect": "Perfect",
+    "played": "Played",
+    "chars": "chars",
+    "accuracy": "Match",
+    "empty": "No scores yet. Solve the first challenge and top the board!",
+    "notConfigured": "The leaderboard isn't enabled on this copy.",
+    "howTitle": "How is the score calculated?",
+    "how": [
+      "Below a 100% match: up to 600 points, dropping fast as you move away from the target (600 × match⁴).",
+      "A 100% match: 600 points + a length bonus of up to 400. Code as short as the author's solution, or shorter, gets the full bonus.",
+      "Equal scores are ranked by shorter code, then by who got there first.",
+      "Official scores are computed on the server in a real browser, so they can't be faked from yours."
+    ],
+    "cta": "Go to challenges"
   },
   "login": {
     "title": "Enter the arena",

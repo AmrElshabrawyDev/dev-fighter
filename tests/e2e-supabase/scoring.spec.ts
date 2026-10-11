@@ -1,0 +1,152 @@
+import { createServerClient } from "@supabase/ssr";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { BrowserContext } from "@playwright/test";
+import { challenges, expect, matchValue, setCode, test } from "../e2e/fixtures";
+
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!;
+const admin = createClient(url, process.env.SUPABASE_SECRET_KEY!, { auth: { persistSession: false } });
+
+const hexagon = challenges.find((c) => c.slug === "the-hexagon")!;
+const rectangleTry = `<div></div><style>body{margin:0;height:100vh;display:grid;place-items:center;background:#1b1b29}div{width:180px;height:200px;background:#89b4fa}</style>`;
+
+// one story, in order: if a step fails, the rest are skipped rather than run on a fresh player
+test.describe.configure({ mode: "serial" });
+
+// a fresh player for this run
+const id = Date.now().toString(36);
+const player = { email: `player-${id}@example.com`, password: `pw-${id}-Secret!`, username: `player-${id}`, name: `Test Player ${id}` };
+let userId = "";
+
+test.beforeAll(async () => {
+  const { data, error } = await admin.auth.admin.createUser({
+    email: player.email,
+    password: player.password,
+    email_confirm: true,
+    user_metadata: { user_name: player.username, full_name: player.name },
+  });
+  if (error) throw error;
+  userId = data.user.id;
+});
+
+test.afterAll(async () => {
+  if (userId) await admin.auth.admin.deleteUser(userId); // their profile and scores go with them
+});
+
+/** Sign the browser in the way the site does: Supabase's session cookies */
+async function signIn(context: BrowserContext) {
+  const jar: { name: string; value: string }[] = [];
+  const supabase = createServerClient(url, publishableKey, {
+    cookies: {
+      getAll: () => jar,
+      setAll: (cookies) => {
+        for (const { name, value } of cookies) jar.push({ name, value });
+      },
+    },
+  });
+  const { error } = await supabase.auth.signInWithPassword({ email: player.email, password: player.password });
+  if (error) throw error;
+  await context.addCookies(jar.map((c) => ({ ...c, domain: "localhost", path: "/", sameSite: "Lax" as const })));
+}
+
+/** A Supabase client acting as the signed-in player, like their browser would */
+async function asPlayer(): Promise<SupabaseClient> {
+  const client = createClient(url, publishableKey, { auth: { persistSession: false } });
+  const { error } = await client.auth.signInWithPassword({ email: player.email, password: player.password });
+  if (error) throw error;
+  return client;
+}
+
+test("signing up creates a public profile", async () => {
+  const { data } = await admin.from("profiles").select("username, display_name").eq("id", userId).single();
+  expect(data).toEqual({ username: player.username, display_name: player.name });
+});
+
+test("visitors are asked to sign in to submit, and come back after", async ({ page }) => {
+  await page.goto(`/ar/challenges/${hexagon.slug}`);
+  const link = page.getByRole("link", { name: "سجّل دخولك لإرسال حلّك" });
+  await expect(link).toBeVisible();
+  await expect(link).toHaveAttribute("href", `/ar/login?next=${encodeURIComponent(`/ar/challenges/${hexagon.slug}`)}`);
+});
+
+test("a signed-in player submits, gets an official score and climbs the leaderboard", async ({ page, context, request }) => {
+  test.setTimeout(60_000);
+  // a visitor has the pages open before the submission: they must not stay stale afterwards
+  const seenByVisitors = async () => {
+    const pages = [`/ar/challenges/${hexagon.slug}`, `/en/challenges/${hexagon.slug}`, "/ar/leaderboard", "/en/leaderboard"];
+    const html = await Promise.all(pages.map(async (path) => (await request.get(path, { headers: { cookie: "" } })).text()));
+    // React separates "@" and the name with a comment in the HTML: <bdi>@<!-- -->name</bdi>
+    return html.map((h) => h.replaceAll("<!-- -->", "").includes(`@${player.username}<`));
+  };
+  expect(await seenByVisitors()).toEqual([false, false, false, false]);
+
+  await signIn(context);
+  await page.goto(`/ar/challenges/${hexagon.slug}`);
+  const submit = page.getByRole("button", { name: "أرسل الحل" });
+  await expect(submit).toBeEnabled();
+
+  // 1) a partial solution: the official match agrees with the live estimate
+  await setCode(page, rectangleTry);
+  const estimate = await matchValue(page);
+  await submit.click();
+  const result = page.getByTestId("official-result");
+  await expect(result).toBeVisible({ timeout: 15_000 });
+  const official = parseFloat((await result.innerText()).match(/([\d.]+)%/)![1]); // the match, in %
+  expect(Math.abs(official - estimate)).toBeLessThan(0.2);
+  await expect(result).toContainText("رقم قياسي جديد لك!");
+  await expect(page.getByTestId("personal-best")).toBeVisible();
+
+  // 2) straight away again: too soon
+  await submit.click();
+  await expect(page.getByTestId("submit-error")).toHaveText("انتظر 5 ثوانٍ بين كل إرسال والآخر.");
+
+  // 3) the full solution: 100% and the maximum score (as long as the author's)
+  await page.waitForTimeout(5_500);
+  await setCode(page, hexagon.reference);
+  await expect(page.getByTestId("match")).toHaveText("100.0%");
+  await expect(page.getByTestId("estimated-score")).toHaveText("1000");
+  await submit.click();
+  await expect(result).toContainText("100%", { timeout: 15_000 });
+  await expect(page.getByTestId("official-score")).toHaveText("1000");
+  await expect(result).toContainText("رقم قياسي جديد لك!");
+  await expect(result).toContainText(/ترتيبك في هذا التحدي: #\d+/);
+
+  // 4) the database holds exactly what the server scored
+  const { data: best } = await admin.from("best_scores").select("score, chars, accuracy").eq("user_id", userId).eq("challenge_slug", hexagon.slug).single();
+  expect(best).toEqual({ score: 1000, chars: [...hexagon.reference].length, accuracy: 100 });
+
+  // 5) the leaderboards show it right away, to visitors too, in both languages
+  expect(await seenByVisitors()).toEqual([true, true, true, true]);
+  await page.goto("/ar/leaderboard");
+  const row = page.getByRole("row").filter({ hasText: `@${player.username}` });
+  await expect(row).toContainText("1000");
+  await page.goto(`/ar/challenges/${hexagon.slug}`);
+  await expect(page.getByRole("region", { name: "أفضل اللاعبين في هذا التحدي" })).toContainText(`@${player.username}`);
+  await expect(page.getByTestId("personal-best")).toContainText("1000");
+});
+
+test("a player can't write a score themselves, even through the API", async () => {
+  const client = await asPlayer();
+  const forged = await client.rpc("record_submission", { p_user: userId, p_slug: "twin-moons", p_code: "x", p_accuracy: 100, p_score: 1000 });
+  expect(forged.error?.code).toBe("42501");
+
+  const inserted = await client.from("best_scores").insert({ user_id: userId, challenge_slug: "twin-moons", submission_id: 1, score: 1000, chars: 1, accuracy: 100, achieved_at: new Date().toISOString() });
+  expect(inserted.error?.code).toBe("42501");
+
+  const updated = await client.from("best_scores").update({ score: 999 }).eq("user_id", userId).select();
+  expect(updated.error?.code).toBe("42501");
+
+  const { data } = await admin.from("best_scores").select("challenge_slug, score").eq("user_id", userId);
+  expect(data).toEqual([{ challenge_slug: hexagon.slug, score: 1000 }]);
+});
+
+test("players only ever see their own code", async () => {
+  const client = await asPlayer();
+  const { data: mine } = await client.from("submissions").select("user_id");
+  expect(mine!.length).toBeGreaterThan(0);
+  expect(mine!.every((row) => row.user_id === userId)).toBe(true);
+
+  const visitor = createClient(url, publishableKey, { auth: { persistSession: false } });
+  const { data: seen } = await visitor.from("submissions").select("id");
+  expect(seen).toEqual([]);
+});

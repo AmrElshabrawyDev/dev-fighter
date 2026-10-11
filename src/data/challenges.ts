@@ -1,11 +1,12 @@
 import "server-only";
 import { launchChallenges, targetVersion, type Challenge } from "./challenge-list";
+import { countChars } from "@/lib/scoring/score";
 import targets from "./targets.json";
 
 export type { Challenge, ChallengeType, Difficulty } from "./challenge-list";
 
 /** What the browser gets: everything except the reference solution */
-export type PublicChallenge = Omit<Challenge, "reference"> & { number: number; target: string };
+export type PublicChallenge = Omit<Challenge, "reference"> & { number: number; target: string; par: number };
 
 const versions: Record<string, string | undefined> = targets;
 
@@ -42,7 +43,12 @@ export function targetSrc(c: Challenge): string {
   return `/targets/${c.slug}.png?v=${targetVersion(c)}`;
 }
 
+/** The length bonus is full at this many characters: the author's own solution */
+export function parFor(c: Challenge): number {
+  return countChars(c.reference);
+}
+
 export function toPublic(c: Challenge): PublicChallenge {
   const { reference, ...rest } = c;
-  return { ...rest, number: challenges.indexOf(c) + 1, target: targetSrc(c) };
+  return { ...rest, number: challenges.indexOf(c) + 1, target: targetSrc(c), par: parFor(c) };
 }

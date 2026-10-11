@@ -13,7 +13,7 @@ export async function Header() {
     { href: `/${locale}/tips`, label: nav.tips },
     { label: nav.tracks, soon: true },
     { label: nav.battles, soon: true },
-    { label: nav.leaderboard, soon: true },
+    { href: `/${locale}/leaderboard`, label: nav.leaderboard },
   ];
   return (
     <header className="sticky top-0 z-40 border-b border-border-subtle bg-bg-overlay backdrop-blur-md">

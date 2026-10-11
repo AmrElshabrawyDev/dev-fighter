@@ -3,7 +3,7 @@
 > Recreate the target with HTML & CSS. Closest match with the shortest code wins.
 > Arabic-first, real UI challenges, and live 1v1 battles.
 
-Status: **in progress** — stages 1 and 2 are built (see milestones). Open questions are at the end.
+Status: **in progress** — stages 1–3 are built (see milestones). Open questions are at the end.
 
 ---
 
@@ -71,7 +71,7 @@ Every challenge is defined by a **reference solution** (HTML + CSS written by th
 2. Compare with the target pixel by pixel (`pixelmatch`) → **accuracy** 0–100 %
 3. **Score** (draft, to be tuned with real play):
    - accuracy < 100 % → `600 × accuracy⁴` (getting close matters most)
-   - accuracy = 100 % → `600 + code-length bonus` (up to +400; shorter code = more points)
+   - accuracy = 100 % → `600 + code-length bonus` (up to +400: `400 × min(1, par ÷ chars)`, where *par* is the length of the author's reference solution)
    - each hint opened: −10 % of the final score
 4. A player's best submission per challenge counts; ties broken by earlier time
 
@@ -101,6 +101,8 @@ Every challenge is defined by a **reference solution** (HTML + CSS written by th
 ---
 
 ## 6. Data model (Supabase / PostgreSQL)
+
+> **As built (stage 3):** challenges live in the code (`src/data/challenge-list.ts`) and tables refer to them by `challenge_slug`; there is no `challenges` table yet. Scores are written only through `record_submission()`, callable by the server's secret key alone (one submission per player every 5 seconds). See `supabase/migrations/`.
 
 ```
 profiles      id (= auth user) · username · display_name · avatar_url · country · total_score · created_at
@@ -135,7 +137,7 @@ Row-level security: anyone can read published challenges, profiles and leaderboa
 
 1. ✅ **Skeleton** — Next.js app, Arabic/English + RTL/LTR, design system, Supabase auth
 2. ✅ **Challenge engine** — editor, sandboxed preview, target, compare slider + diff view, live accuracy, drafts saved per challenge
-3. **Official scoring** — server render + pixel diff, submissions, best scores, leaderboards
+3. ✅ **Official scoring** — server render + pixel diff, submissions, best scores, leaderboards
 4. **Content & learning** — 20–30 challenges, tracks, hints, explanations, daily challenge
 5. **Polish & launch** — profiles, SEO/OG images, performance, deploy
 

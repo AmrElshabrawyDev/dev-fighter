@@ -4,7 +4,10 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { Playground } from "@/components/play/Playground";
 import { challenges, getChallenge, toPublic } from "@/data/challenges";
+import { TopPlayers } from "@/components/play/TopPlayers";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
+import { isScoringConfigured } from "@/lib/supabase/admin";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export function generateStaticParams() {
   return challenges.map((c) => ({ slug: c.slug }));
@@ -53,7 +56,16 @@ async function Challenge({ params }: { params: PageProps<"/[lang]/challenges/[sl
           <span className={`rounded bg-bg-surface px-2 py-1 ${difficultyColor[challenge.difficulty]}`}>{t.difficulty[challenge.difficulty]}</span>
         </div>
       </div>
-      <Playground challenge={challenge} t={dict.play} tipsHref={`/${locale}/tips`} />
+      <Playground
+        challenge={challenge}
+        t={dict.play}
+        tipsHref={`/${locale}/tips`}
+        loginHref={`/${locale}/login?next=${encodeURIComponent(`/${locale}/challenges/${challenge.slug}`)}`}
+        canSubmit={isScoringConfigured && isSupabaseConfigured}
+      />
+      <Suspense fallback={<div aria-busy className="mt-8 h-40 animate-pulse rounded-xl bg-bg-elevated" />}>
+        <TopPlayers slug={challenge.slug} locale={locale} t={dict.play} />
+      </Suspense>
     </>
   );
 }

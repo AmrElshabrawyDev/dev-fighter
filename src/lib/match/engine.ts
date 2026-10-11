@@ -10,6 +10,7 @@
  */
 import pixelmatch from "pixelmatch";
 import { previewDocument } from "./document";
+import { MATCH_THRESHOLD } from "./settings";
 
 export type Match = {
   /** 0…1 — the share of pixels that match the target */
@@ -104,7 +105,7 @@ export function compare(output: ImageData, target: ImageData): Match {
   const { width, height } = target;
   const diff = new ImageData(width, height);
   const mismatched = pixelmatch(output.data, target.data, diff.data, width, height, {
-    threshold: 0.1,
+    threshold: MATCH_THRESHOLD,
     diffMask: true,
     diffColor: DIFF_COLOR,
     aaColor: SOFT_COLOR,

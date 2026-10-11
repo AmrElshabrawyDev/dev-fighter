@@ -3,6 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import type { Locale } from "@/i18n/config";
+import { safeNextPath } from "@/lib/safe-next";
 import { createClient } from "@/lib/supabase/client";
 
 type Labels = { github: string; google: string; error: string };
@@ -10,13 +11,15 @@ type Provider = "github" | "google";
 
 function Buttons({ locale, labels }: { locale: Locale; labels: Labels }) {
   const [pending, setPending] = useState<Provider | null>(null);
-  const failed = useSearchParams().has("error");
+  const params = useSearchParams();
+  const failed = params.has("error");
 
   async function signIn(provider: Provider) {
     const supabase = createClient();
     if (!supabase) return;
     setPending(provider);
-    const next = `/${locale}`;
+    // back to the page that sent them here (only paths on this site)
+    const next = params.get("next") ? safeNextPath(params.get("next")) : `/${locale}`;
     await supabase.auth.signInWithOAuth({
       provider,
       options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
