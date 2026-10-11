@@ -20,7 +20,7 @@ export type Challenge = {
 const SHAPE = { width: 400, height: 300 };
 const COMPONENT = { width: 600, height: 400 };
 
-export const challenges: Challenge[] = [
+const launchChallenges: Challenge[] = [
   {
     slug: "simply-square",
     type: "shape",
@@ -81,7 +81,7 @@ div{width:240px;height:120px;border-radius:120px 120px 0 0;background:repeating-
     difficulty: "easy",
     ...COMPONENT,
     title: { ar: "زر رئيسي", en: "Pill Button" },
-    colors: ["#11111b", "#89b4fa", "#11111b"],
+    colors: ["#11111b", "#89b4fa"],
     reference: `<button><i></i><b></b></button>
 <style>
 body{margin:0;height:100vh;display:grid;place-items:center;background:#11111b}
@@ -96,7 +96,7 @@ b{width:120px;height:14px;border-radius:7px;background:#11111b}
     difficulty: "medium",
     ...COMPONENT,
     title: { ar: "بطاقة ملف شخصي", en: "Profile Card" },
-    colors: ["#11111b", "#1b1b29", "#94e2d5", "#45475a", "#89b4fa"],
+    colors: ["#11111b", "#1b1b29", "#94e2d5", "#cdd6f4", "#45475a", "#89b4fa"],
     reference: `<div class="card"><i></i><b></b><s></s><u></u></div>
 <style>
 body{margin:0;height:100vh;display:grid;place-items:center;background:#11111b}
@@ -108,3 +108,22 @@ u{width:100%;height:44px;margin-top:10px;border-radius:12px;background:#89b4fa}
 </style>`,
   },
 ];
+
+/**
+ * Guards the data at build time: each colour shown to the player appears once
+ * (it's also a React key) and every colour the reference uses is listed, so the
+ * palette never leaves a player guessing.
+ */
+function checked(list: Challenge[]): Challenge[] {
+  for (const c of list) {
+    const shown = c.colors.map((color) => color.toLowerCase());
+    if (new Set(shown).size !== shown.length) throw new Error(`Challenge "${c.slug}": a colour is listed twice`);
+    // 6-digit colours only; #rrggbbaa (shadows with alpha) are variations of a listed colour
+    for (const [used] of c.reference.toLowerCase().matchAll(/#[0-9a-f]{6}(?![0-9a-f])/g)) {
+      if (!shown.includes(used)) throw new Error(`Challenge "${c.slug}": ${used} is used but not in its colours`);
+    }
+  }
+  return list;
+}
+
+export const challenges = checked(launchChallenges);
