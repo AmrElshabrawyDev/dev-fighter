@@ -33,7 +33,10 @@ export function Playground({ challenge, t }: Props) {
   const [match, setMatch] = useState<Match | null>(null);
   const [unsupported, setUnsupported] = useState(false);
   const [mode, setMode] = useState<Mode>("slide");
-  const [split, setSplit] = useState<number | null>(null);
+  // where the pointer is over the output, as 0…1 of its width and height
+  const [pointer, setPointer] = useState<{ x: number; y: number } | null>(null);
+  const [vertical, setVertical] = useState(false); // held Shift: compare top/bottom
+
   const [copied, setCopied] = useState<string | null>(null);
   const target = useRef<Promise<ImageData> | null>(null);
   const diffCanvas = useRef<HTMLCanvasElement>(null);
@@ -55,6 +58,20 @@ export function Playground({ challenge, t }: Props) {
     };
   }, [preview, challenge.target, width, height]);
 
+  // hold Shift to compare top/bottom instead of left/right
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => e.key === "Shift" && setVertical(e.type === "keydown");
+    const release = () => setVertical(false);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("keyup", onKey);
+    window.addEventListener("blur", release);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("keyup", onKey);
+      window.removeEventListener("blur", release);
+    };
+  }, []);
+
   useEffect(() => {
     if (mode === "diff" && match) diffCanvas.current?.getContext("2d")?.putImageData(match.diff, 0, 0);
   }, [mode, match]);
@@ -73,6 +90,12 @@ export function Playground({ challenge, t }: Props) {
     if (code !== starter && !window.confirm(t.resetConfirm)) return;
     setCode(starter);
   };
+
+  const split = pointer && (vertical ? pointer.y : pointer.x);
+  const splitPx = split === null ? 0 : Math.round(split * (vertical ? height : width));
+  const at = (fraction: number) => `${fraction * 100}%`;
+  // the size label stays inside the box near the edges
+  const labelAt = (fraction: number) => `clamp(1.25rem, ${at(fraction)}, calc(100% - 1.25rem))`;
 
   const accuracy = match ? formatAccuracy(match.accuracy) : null;
   const perfect = match?.accuracy === 1;
@@ -152,13 +175,15 @@ export function Playground({ challenge, t }: Props) {
           <Canvas width={width} height={height}>
             {(scale) => (
               <div
-                className={`relative h-full w-full ${mode === "slide" ? "cursor-col-resize touch-pan-y" : ""}`}
+                className={`relative h-full w-full ${mode !== "slide" ? "" : vertical ? "cursor-row-resize touch-pan-x" : "cursor-col-resize touch-pan-y"}`}
                 onPointerMove={(e) => {
                   if (mode !== "slide") return;
                   const box = e.currentTarget.getBoundingClientRect();
-                  setSplit(Math.min(1, Math.max(0, (e.clientX - box.left) / box.width)));
+                  const clamp = (n: number) => Math.min(1, Math.max(0, n));
+                  setPointer({ x: clamp((e.clientX - box.left) / box.width), y: clamp((e.clientY - box.top) / box.height) });
+                  setVertical(e.shiftKey);
                 }}
-                onPointerLeave={() => setSplit(null)}
+                onPointerLeave={() => setPointer(null)}
               >
                 <iframe
                   title={t.output}
@@ -175,9 +200,19 @@ export function Playground({ challenge, t }: Props) {
                       src={challenge.target}
                       alt=""
                       className="pointer-events-none absolute inset-0 h-full w-full"
-                      style={{ clipPath: `inset(0 0 0 ${split * 100}%)` }}
+                      style={{ clipPath: vertical ? `inset(${at(split)} 0 0 0)` : `inset(0 0 0 ${at(split)})` }}
                     />
-                    <span className="pointer-events-none absolute inset-y-0 w-0.5 bg-gold shadow-[0_0_8px] shadow-gold" style={{ left: `${split * 100}%` }} />
+                    <span
+                      className={`pointer-events-none absolute bg-gold shadow-[0_0_8px] shadow-gold ${vertical ? "inset-x-0 h-0.5" : "inset-y-0 w-0.5"}`}
+                      style={vertical ? { top: at(split) } : { left: at(split) }}
+                    />
+                    {/* the line's position in the challenge's own pixels */}
+                    <span
+                      className={`pointer-events-none absolute rounded bg-accent px-1.5 py-0.5 font-mono text-xs font-bold text-on-primary ${vertical ? "end-1 -translate-y-1/2" : "bottom-1 -translate-x-1/2"}`}
+                      style={vertical ? { top: labelAt(split) } : { left: labelAt(split) }}
+                    >
+                      {splitPx}
+                    </span>
                   </>
                 )}
                 {mode === "diff" && (
@@ -191,14 +226,22 @@ export function Playground({ challenge, t }: Props) {
           </Canvas>
           {mode === "slide" && (
             <label className="mt-2 grid gap-1 text-xs text-text-tertiary">
-              <span>{t.slideHint}</span>
+              <span>
+                {t.slideHint}{" "}
+                <span className="hidden [@media(hover:hover)]:inline">
+                  · <kbd className="rounded border border-border-strong bg-bg-surface px-1 text-[10px] text-text-secondary">Shift</kbd> {t.shiftHint}
+                </span>
+              </span>
               <input
                 type="range"
                 min={0}
                 max={100}
                 value={split === null ? 100 : Math.round(split * 100)}
-                onChange={(e) => setSplit(Number(e.target.value) / 100)}
-                onBlur={() => setSplit(null)}
+                onChange={(e) => {
+                  const value = Number(e.target.value) / 100;
+                  setPointer({ x: value, y: value });
+                }}
+                onBlur={() => setPointer(null)}
                 dir="ltr"
                 className="w-full accent-gold"
               />

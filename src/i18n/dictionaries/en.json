@@ -108,6 +108,7 @@
     "slide": "Compare",
     "diff": "Diff",
     "slideHint": "Move over the output, or use the slider, to reveal the target",
+    "shiftHint": "to compare top to bottom",
     "diffHint": "Red: pixels that differ from the target. Yellow: soft edges, not counted.",
     "diffLabel": "Difference between your output and the target",
     "target": "Target",
