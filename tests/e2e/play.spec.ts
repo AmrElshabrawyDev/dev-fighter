@@ -81,9 +81,16 @@ test.describe("comparing with the target", () => {
 
     await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.3);
     await expect(position).toHaveText(String(hexagon.width / 2));
+    // the label sits outside the canvas: below it, centred on the line
+    let label = (await position.boundingBox())!;
+    expect(label.y).toBeGreaterThanOrEqual(box.y + box.height);
+    expect(Math.abs(label.x + label.width / 2 - (box.x + box.width * 0.5))).toBeLessThan(2);
 
     await page.keyboard.down("Shift");
     await expect(position).toHaveText(String(Math.round(hexagon.height * 0.3)));
+    // …and beside it in the top/bottom mode
+    label = (await position.boundingBox())!;
+    expect(label.x).toBeGreaterThanOrEqual(box.x + box.width);
     await page.mouse.move(box.x + box.width * 0.5, box.y + box.height * 0.6);
     await expect(position).toHaveText(String(Math.round(hexagon.height * 0.6)));
     await page.keyboard.up("Shift");
@@ -91,6 +98,15 @@ test.describe("comparing with the target", () => {
 
     await page.mouse.move(box.x + box.width + 50, box.y - 50); // leave the output
     await expect(position).toHaveCount(0);
+  });
+
+  test("the output and the target are shown at the same size, with room around them", async ({ page }) => {
+    await page.goto(`/ar/challenges/${hexagon.slug}`);
+    const output = (await page.getByTestId("output").boundingBox())!;
+    const target = (await page.getByRole("img", { name: "الصورة المطلوب رسمها" }).boundingBox())!;
+    expect(Math.round(output.width)).toBe(Math.round(target.width));
+    expect(Math.round(output.height)).toBe(Math.round(target.height));
+    expect(output.width).toBeGreaterThan(300); // the frame doesn't eat into the canvas on a laptop screen
   });
 
   test("the slider works from the keyboard", async ({ page }) => {

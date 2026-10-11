@@ -95,8 +95,6 @@ export function Playground({ challenge, t, tipsHref }: Props) {
   const split = pointer && (vertical ? pointer.y : pointer.x);
   const splitPx = split === null ? 0 : Math.round(split * (vertical ? height : width));
   const at = (fraction: number) => `${fraction * 100}%`;
-  // the size label stays inside the box near the edges
-  const labelAt = (fraction: number) => `clamp(1.25rem, ${at(fraction)}, calc(100% - 1.25rem))`;
 
   const accuracy = match ? formatAccuracy(match.accuracy) : null;
   const perfect = match?.accuracy === 1;
@@ -131,7 +129,7 @@ export function Playground({ challenge, t, tipsHref }: Props) {
       </section>
 
       {/* Output, target, match */}
-      <div className="grid content-start gap-5 sm:grid-cols-2 lg:w-[400px] lg:grid-cols-1 2xl:w-[820px] 2xl:grid-cols-2">
+      <div className="grid content-start gap-5 sm:grid-cols-2 lg:w-[480px] lg:grid-cols-1 2xl:w-[980px] 2xl:grid-cols-2">
         <section className="rounded-xl border border-border-default bg-bg-elevated p-4 sm:col-span-2 lg:col-span-1 2xl:col-span-2" aria-live="polite">
           <div className="flex items-end justify-between gap-4">
             <div>
@@ -176,7 +174,30 @@ export function Playground({ challenge, t, tipsHref }: Props) {
             </div>
           }
         >
-          <Canvas width={width} height={height}>
+          <Canvas
+            width={width}
+            height={height}
+            outside={
+              mode === "slide" &&
+              split !== null && (
+                <>
+                  {/* the line runs past the canvas edge to its label, which sits outside the canvas */}
+                  <span
+                    className={`pointer-events-none absolute bg-gold shadow-[0_0_8px] shadow-gold ${vertical ? "left-0 h-0.5 w-[calc(100%+0.5rem)] -translate-y-1/2" : "top-0 h-[calc(100%+0.5rem)] w-0.5 -translate-x-1/2"}`}
+                    style={vertical ? { top: at(split) } : { left: at(split) }}
+                  />
+                  {/* the line's position in the challenge's own pixels */}
+                  <span
+                    data-testid="compare-position"
+                    className={`pointer-events-none absolute rounded bg-accent px-1.5 py-0.5 font-mono text-xs font-bold text-on-primary ${vertical ? "left-[calc(100%+0.5rem)] -translate-y-1/2" : "top-[calc(100%+0.5rem)] -translate-x-1/2"}`}
+                    style={vertical ? { top: at(split) } : { left: at(split) }}
+                  >
+                    {splitPx}
+                  </span>
+                </>
+              )
+            }
+          >
             {(scale) => (
               <div
                 data-testid="output"
@@ -207,18 +228,6 @@ export function Playground({ challenge, t, tipsHref }: Props) {
                       className="pointer-events-none absolute inset-0 h-full w-full"
                       style={{ clipPath: vertical ? `inset(${at(split)} 0 0 0)` : `inset(0 0 0 ${at(split)})` }}
                     />
-                    <span
-                      className={`pointer-events-none absolute bg-gold shadow-[0_0_8px] shadow-gold ${vertical ? "inset-x-0 h-0.5" : "inset-y-0 w-0.5"}`}
-                      style={vertical ? { top: at(split) } : { left: at(split) }}
-                    />
-                    {/* the line's position in the challenge's own pixels */}
-                    <span
-                      data-testid="compare-position"
-                      className={`pointer-events-none absolute rounded bg-accent px-1.5 py-0.5 font-mono text-xs font-bold text-on-primary ${vertical ? "end-1 -translate-y-1/2" : "bottom-1 -translate-x-1/2"}`}
-                      style={vertical ? { top: labelAt(split) } : { left: labelAt(split) }}
-                    >
-                      {splitPx}
-                    </span>
                   </>
                 )}
                 {mode === "diff" && (
@@ -301,10 +310,22 @@ function Panel({ title, aside, children }: { title: string; aside?: ReactNode; c
 }
 
 /**
- * A box with the challenge's aspect ratio, at most MAX_DISPLAY wide. Children
- * get the scale from the challenge's real size to the box's current size.
+ * A box with the challenge's aspect ratio, at most MAX_DISPLAY wide, inside a
+ * frame of empty space (where the compare label sits, outside the canvas).
+ * Children get the scale from the challenge's real size to the box's size;
+ * `outside` is laid over the box without being clipped by it.
  */
-function Canvas({ width, height, children }: { width: number; height: number; children: (scale: number) => ReactNode }) {
+function Canvas({
+  width,
+  height,
+  children,
+  outside,
+}: {
+  width: number;
+  height: number;
+  children: (scale: number) => ReactNode;
+  outside?: ReactNode;
+}) {
   const box = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(Math.min(1, MAX_DISPLAY / width));
 
@@ -316,13 +337,13 @@ function Canvas({ width, height, children }: { width: number; height: number; ch
   }, [width]);
 
   return (
-    <div
-      ref={box}
-      dir="ltr"
-      className="relative mx-auto w-full overflow-hidden rounded-lg ring-1 ring-border-subtle"
-      style={{ maxWidth: Math.min(width, MAX_DISPLAY), aspectRatio: `${width} / ${height}` }}
-    >
-      {children(scale)}
+    <div className="rounded-lg bg-bg-base/60 px-6 py-8 sm:px-10">
+      <div dir="ltr" className="relative mx-auto w-full" style={{ maxWidth: Math.min(width, MAX_DISPLAY) }}>
+        <div ref={box} className="relative w-full overflow-hidden rounded-lg ring-1 ring-border-subtle" style={{ aspectRatio: `${width} / ${height}` }}>
+          {children(scale)}
+        </div>
+        {outside}
+      </div>
     </div>
   );
 }

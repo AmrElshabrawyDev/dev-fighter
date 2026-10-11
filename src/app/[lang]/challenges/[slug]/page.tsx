@@ -63,7 +63,7 @@ function PlaySkeleton() {
   return (
     <div aria-busy className="animate-pulse">
       <div className="mb-5 h-8 w-72 rounded-lg bg-bg-elevated" />
-      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_400px]">
+      <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_480px]">
         <div className="h-[22rem] rounded-xl bg-bg-elevated lg:h-[calc(100dvh-7rem)]" />
         <div className="grid content-start gap-5">
           <div className="aspect-[4/3] rounded-xl bg-bg-elevated" />
