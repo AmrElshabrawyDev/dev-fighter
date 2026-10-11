@@ -53,7 +53,7 @@ async function Challenge({ params }: { params: PageProps<"/[lang]/challenges/[sl
           <span className={`rounded bg-bg-surface px-2 py-1 ${difficultyColor[challenge.difficulty]}`}>{t.difficulty[challenge.difficulty]}</span>
         </div>
       </div>
-      <Playground challenge={challenge} t={dict.play} />
+      <Playground challenge={challenge} t={dict.play} tipsHref={`/${locale}/tips`} />
     </>
   );
 }

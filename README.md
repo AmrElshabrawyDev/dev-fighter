@@ -36,6 +36,8 @@ The first time, install the browser for the end-to-end tests: `npx playwright in
 | `tests/unit/safety.test.ts` | Sign-in redirects stay on the site; the preview sandbox blocks scripts and requests; match % formatting |
 | `tests/e2e/navigation.spec.ts` | Language redirects, RTL/LTR, the language switcher, 404 pages, no sideways scrolling on phones |
 | `tests/e2e/challenges.spec.ts` | The list, target images, and that no page's HTML contains a reference solution |
+| `tests/unit/tips.test.ts` | Every tip has Arabic and English text and really makes the code shorter |
+| `tests/e2e/tips.spec.ts` | Every tip's before and after draw exactly the same picture; the tips page, its index and links |
 | `tests/e2e/play.spec.ts` | Each solution reaches 100%, partial ones score in between, diff view, compare line + Shift, slider, drafts, start over, copying colours, line wrapping |
 
 Every end-to-end test also fails if the page logs an error to the console.
@@ -70,6 +72,8 @@ Every end-to-end test also fails if the page logs an error to the console.
 | `src/app/[lang]/challenges/[slug]/` | The challenge page |
 | `src/components/play/` | Editor (CodeMirror), live preview, compare slider, diff view, match meter |
 | `src/lib/match/` | The preview document (CSP sandbox) and the in-browser match engine |
+| `src/data/tips.ts` · `src/app/[lang]/tips/` | Tips & tricks for shorter code (before/after examples) |
+| `src/components/CodeBlock.tsx` | Code samples highlighted on the server, in the editor's colours |
 | `src/lib/drafts.ts` | Keeps your code per challenge in localStorage |
 | `tests/` | Unit tests (`tests/unit`) and end-to-end tests (`tests/e2e`) |
 

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { PublicChallenge } from "@/data/challenges";
 import type { Dictionary } from "@/i18n/get-dictionary";
@@ -8,7 +9,7 @@ import { previewDocument } from "@/lib/match/document";
 import { compare, formatAccuracy, loadTarget, renderCode, type Match } from "@/lib/match/engine";
 import { CodeEditor } from "./CodeEditor";
 
-type Props = { challenge: PublicChallenge; t: Dictionary["play"] };
+type Props = { challenge: PublicChallenge; t: Dictionary["play"]; tipsHref: string };
 type Mode = "slide" | "diff";
 
 /** The largest size a canvas is shown at; bigger challenges are scaled down */
@@ -24,7 +25,7 @@ const starterCode = (color: string) => `<div></div>
 </style>
 `;
 
-export function Playground({ challenge, t }: Props) {
+export function Playground({ challenge, t, tipsHref }: Props) {
   const { width, height } = challenge;
   const starter = starterCode(challenge.colors[1] ?? challenge.colors[0]);
 
@@ -148,7 +149,10 @@ export function Playground({ challenge, t }: Props) {
             <div className={`h-full rounded-full transition-all duration-300 ${barColor}`} style={{ width: `${(match?.accuracy ?? 0) * 100}%` }} />
           </div>
           <p className="mt-3 text-sm text-text-secondary">
-            {unsupported ? t.unsupported : perfect ? <span className="font-bold text-success">{t.perfect}</span> : t.estimate}
+            {unsupported ? t.unsupported : perfect ? <span className="font-bold text-success">{t.perfect}</span> : t.estimate}{" "}
+            <Link href={tipsHref} className="whitespace-nowrap text-secondary underline-offset-4 hover:underline">
+              {t.tipsLink}
+            </Link>
           </p>
           <button type="button" disabled className="mt-3 w-full cursor-not-allowed rounded-lg bg-bg-surface py-2.5 text-sm font-bold text-text-tertiary">
             {t.submitSoon}

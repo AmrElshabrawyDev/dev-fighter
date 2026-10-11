@@ -6,6 +6,7 @@
   "nav": {
     "home": "Home",
     "challenges": "Challenges",
+    "tips": "Tips & tricks",
     "tracks": "Tracks",
     "battles": "Battles",
     "leaderboard": "Leaderboard",
@@ -120,7 +121,24 @@
     "estimate": "Instant estimate in your browser while you type. Official scoring and leaderboards come next.",
     "perfect": "Perfect match! Now try making your code shorter.",
     "unsupported": "This browser can't measure the match live. Try Chrome, Edge or Firefox.",
-    "submitSoon": "Submit — coming soon"
+    "submitSoon": "Submit — coming soon",
+    "tipsLink": "Tips for shorter code"
+  },
+  "tips": {
+    "title": "Tips & tricks for shorter code",
+    "metaDescription": "The best ways to shorten your HTML & CSS in Dev Fighter challenges, each with a before-and-after example and the characters it saves.",
+    "intro": "A 100% match is only half the job — the other half is the shortest code possible. These are the tricks the pros use, each with a before-and-after example that draws exactly the same picture.",
+    "disclaimer": "These tricks win challenges; they're not how to write CSS for real websites. At work, write clear code and let your build tools minify it.",
+    "index": "All tips",
+    "before": "Before",
+    "after": "After",
+    "chars": "chars",
+    "saved": "{count} characters saved",
+    "result": "Result — the same picture before and after",
+    "note": "Heads-up:",
+    "ctaTitle": "Try them now",
+    "ctaText": "Pick a challenge, reach 100%, then start shortening your code.",
+    "ctaButton": "Go to challenges"
   },
   "login": {
     "title": "Enter the arena",

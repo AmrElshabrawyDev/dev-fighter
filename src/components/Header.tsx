@@ -10,6 +10,7 @@ export async function Header() {
   const { nav } = await getDictionary();
   const links = [
     { href: `/${locale}/challenges`, label: nav.challenges },
+    { href: `/${locale}/tips`, label: nav.tips },
     { label: nav.tracks, soon: true },
     { label: nav.battles, soon: true },
     { label: nav.leaderboard, soon: true },
