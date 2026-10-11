@@ -135,13 +135,13 @@ export function Playground({ challenge, t }: Props) {
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="text-sm text-text-secondary">{t.match}</p>
-              <p className={`font-mono text-3xl font-bold ${perfect ? "text-success" : "text-text-primary"}`} dir="ltr">
+              <p data-testid="match" className={`font-mono text-3xl font-bold ${perfect ? "text-success" : "text-text-primary"}`} dir="ltr">
                 {unsupported ? "—" : accuracy === null ? "…" : `${accuracy}%`}
               </p>
             </div>
             <div className="text-end">
               <p className="text-sm text-text-secondary">{t.chars}</p>
-              <p className="font-mono text-xl font-bold" dir="ltr">{code.length}</p>
+              <p data-testid="chars" className="font-mono text-xl font-bold" dir="ltr">{code.length}</p>
             </div>
           </div>
           <div className="mt-3 h-2 overflow-hidden rounded-full bg-bg-surface" dir="ltr">
@@ -175,6 +175,7 @@ export function Playground({ challenge, t }: Props) {
           <Canvas width={width} height={height}>
             {(scale) => (
               <div
+                data-testid="output"
                 className={`relative h-full w-full ${mode !== "slide" ? "" : vertical ? "cursor-row-resize touch-pan-x" : "cursor-col-resize touch-pan-y"}`}
                 onPointerMove={(e) => {
                   if (mode !== "slide") return;
@@ -208,6 +209,7 @@ export function Playground({ challenge, t }: Props) {
                     />
                     {/* the line's position in the challenge's own pixels */}
                     <span
+                      data-testid="compare-position"
                       className={`pointer-events-none absolute rounded bg-accent px-1.5 py-0.5 font-mono text-xs font-bold text-on-primary ${vertical ? "end-1 -translate-y-1/2" : "bottom-1 -translate-x-1/2"}`}
                       style={vertical ? { top: labelAt(split) } : { left: labelAt(split) }}
                     >

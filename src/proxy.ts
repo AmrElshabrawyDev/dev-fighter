@@ -1,20 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import { defaultLocale, hasLocale, LOCALE_COOKIE, type Locale } from "./i18n/config";
+import { hasLocale, LOCALE_COOKIE } from "./i18n/config";
+import { pickLocale } from "./i18n/pick-locale";
 import { isSupabaseConfigured, supabaseKey, supabaseUrl } from "./lib/supabase/config";
-
-/** The visitor's language: their saved choice, then the browser's preference, then Arabic */
-function pickLocale(request: NextRequest): Locale {
-  const saved = request.cookies.get(LOCALE_COOKIE)?.value;
-  if (saved && hasLocale(saved)) return saved;
-  // "ar-EG,ar;q=0.9,en;q=0.8" → the first of ar/en the browser lists wins
-  const tags = (request.headers.get("accept-language") ?? "").toLowerCase().split(",");
-  for (const tag of tags) {
-    const primary = tag.trim().split(/[-;]/)[0];
-    if (hasLocale(primary)) return primary;
-  }
-  return defaultLocale;
-}
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -23,7 +11,8 @@ export async function proxy(request: NextRequest) {
   // every page lives under /ar or /en
   if (!hasLocale(first)) {
     const url = request.nextUrl.clone();
-    url.pathname = `/${pickLocale(request)}${pathname === "/" ? "" : pathname}`;
+    const locale = pickLocale(request.cookies.get(LOCALE_COOKIE)?.value, request.headers.get("accept-language"));
+    url.pathname = `/${locale}${pathname === "/" ? "" : pathname}`;
     return NextResponse.redirect(url);
   }
 

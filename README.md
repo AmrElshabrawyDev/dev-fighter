@@ -20,6 +20,26 @@ npm run dev                   # http://localhost:3000 → redirects to /ar or /e
 
 Without Supabase keys the whole site works; the sign-in page just says sign-in isn't enabled yet.
 
+## Tests
+
+```bash
+npm test            # unit tests (Vitest) — a second or so
+npm run test:e2e    # end-to-end tests (Playwright): builds the site, then plays it in Chromium
+```
+
+The first time, install the browser for the end-to-end tests: `npx playwright install chromium`.
+
+| File | What it checks |
+|---|---|
+| `tests/unit/challenges.test.ts` | Every challenge is well formed, lists every colour it uses, and has an up-to-date target image of the right size; the browser never gets a reference solution |
+| `tests/unit/i18n.test.ts` | Arabic and English have the same keys and no empty text; language picking from the cookie and the browser |
+| `tests/unit/safety.test.ts` | Sign-in redirects stay on the site; the preview sandbox blocks scripts and requests; match % formatting |
+| `tests/e2e/navigation.spec.ts` | Language redirects, RTL/LTR, the language switcher, 404 pages, no sideways scrolling on phones |
+| `tests/e2e/challenges.spec.ts` | The list, target images, and that no page's HTML contains a reference solution |
+| `tests/e2e/play.spec.ts` | Each solution reaches 100%, partial ones score in between, diff view, compare line + Shift, slider, drafts, start over, copying colours, line wrapping |
+
+Every end-to-end test also fails if the page logs an error to the console.
+
 ## How the live match works
 
 1. Every challenge has a **reference solution**. `npm run targets` renders each one in headless Chromium to `public/targets/<slug>.png`, so the browser only ever gets the image, never the reference code.
@@ -51,5 +71,6 @@ Without Supabase keys the whole site works; the sign-in page just says sign-in i
 | `src/components/play/` | Editor (CodeMirror), live preview, compare slider, diff view, match meter |
 | `src/lib/match/` | The preview document (CSP sandbox) and the in-browser match engine |
 | `src/lib/drafts.ts` | Keeps your code per challenge in localStorage |
+| `tests/` | Unit tests (`tests/unit`) and end-to-end tests (`tests/e2e`) |
 
 Built by [Amr Elshabrawy](https://amrelshabrawydev.github.io).

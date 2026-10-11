@@ -15,7 +15,8 @@ const versions: Record<string, string | undefined> = targets;
  * - every colour the reference uses is listed, so the palette never leaves a player guessing
  * - the target image exists and was rendered from the current reference
  */
-function checked(list: Challenge[]): Challenge[] {
+export function validateChallenges(list: Challenge[], versions: Record<string, string | undefined>): Challenge[] {
+  if (new Set(list.map((c) => c.slug)).size !== list.length) throw new Error("Two challenges share a slug");
   for (const c of list) {
     const shown = c.colors.map((color) => color.toLowerCase());
     if (new Set(shown).size !== shown.length) throw new Error(`Challenge "${c.slug}": a colour is listed twice`);
@@ -30,7 +31,7 @@ function checked(list: Challenge[]): Challenge[] {
   return list;
 }
 
-export const challenges = checked(launchChallenges);
+export const challenges = validateChallenges(launchChallenges, versions);
 
 export function getChallenge(slug: string): Challenge | undefined {
   return challenges.find((c) => c.slug === slug);
