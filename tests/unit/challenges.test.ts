@@ -22,6 +22,10 @@ const square: Challenge = {
   title: { ar: "مربع", en: "Square" },
   colors: ["#1b1b29", "#89b4fa"],
   reference: "<div></div><style>body{background:#1b1b29}div{background:#89b4fa}</style>",
+  track: "basics",
+  skill: "width / height",
+  hints: [{ ar: "تلميح", en: "A hint" }],
+  explanation: { ar: "شرح", en: "An explanation" },
 };
 const versionsFor = (c: Challenge) => ({ [c.slug]: targetVersion(c) });
 
@@ -103,11 +107,19 @@ describe("targetVersion", () => {
 });
 
 describe("what the browser gets", () => {
-  it("never includes the reference solution", () => {
+  it("never includes the reference solution, the hints or the explanation", () => {
     for (const c of challenges) {
       const shown = toPublic(c);
       expect(shown).not.toHaveProperty("reference");
-      expect(JSON.stringify(shown)).not.toContain(c.reference);
+      expect(shown).not.toHaveProperty("hints");
+      expect(shown).not.toHaveProperty("explanation");
+      const json = JSON.stringify(shown);
+      expect(json).not.toContain(c.reference);
+      for (const text of [c.explanation, ...c.hints]) {
+        expect(json).not.toContain(text.ar);
+        expect(json).not.toContain(text.en);
+      }
+      expect(shown.hintCount).toBe(c.hints.length);
     }
   });
 

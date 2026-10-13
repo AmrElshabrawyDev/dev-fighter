@@ -10,5 +10,7 @@ export default defineConfig({
   test: {
     include: ["tests/unit/**/*.test.ts"],
     environment: "node",
+    // the official-renderer tests start a real browser first
+    testTimeout: 30_000,
   },
 });

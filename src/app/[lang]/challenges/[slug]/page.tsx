@@ -58,6 +58,7 @@ async function Challenge({ params }: { params: PageProps<"/[lang]/challenges/[sl
       </div>
       <Playground
         challenge={challenge}
+        locale={locale}
         t={dict.play}
         tipsHref={`/${locale}/tips`}
         loginHref={`/${locale}/login?next=${encodeURIComponent(`/${locale}/challenges/${challenge.slug}`)}`}

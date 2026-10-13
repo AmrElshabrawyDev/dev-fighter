@@ -99,6 +99,9 @@ export function SubmitPanel({ slug, code, enabled, loginHref, t }: Props) {
               <dd className="font-mono font-bold">{result.chars}</dd>
             </div>
           </dl>
+          {result.hintsUsed > 0 && (
+            <p className="mt-2 text-xs text-gold">{fill(t.hintsTaken, { n: result.hintsUsed, percent: result.hintsUsed * 10 })}</p>
+          )}
           {result.improved && <p className="mt-2 font-bold text-success">{t.newBest}</p>}
           <p className="mt-1 text-text-secondary">{fill(t.rank, { rank: result.rank })}</p>
         </div>

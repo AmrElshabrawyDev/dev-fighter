@@ -4,7 +4,7 @@
 
 An Arabic-first CSS challenge platform — shape and real UI-component challenges, learning tracks, and (soon) live 1v1 battles.
 
-> 🚧 Release 1 in progress — stages 1 (skeleton), 2 (challenge engine) and 3 (official scoring and leaderboards) are done. See the product spec: [docs/SPEC.md](docs/SPEC.md)
+> 🚧 Release 1 in progress — stages 1 (skeleton), 2 (challenge engine), 3 (official scoring and leaderboards) and 4 (content and learning) are done. See the product spec: [docs/SPEC.md](docs/SPEC.md)
 
 ## Stack
 
@@ -61,14 +61,19 @@ npm run test:e2e:supabase   # sign in → submit → leaderboard, against the lo
 | `tests/unit/scoring.test.ts` | The score formula; every reference scores 100% in the official renderer and agrees with the target images; player JavaScript never runs |
 | `tests/unit/i18n.test.ts` | Arabic and English have the same keys and no empty text; language picking from the cookie and the browser |
 | `tests/unit/safety.test.ts` | Sign-in redirects stay on the site; the preview sandbox blocks scripts and requests; match % formatting |
+| `tests/unit/learning.test.ts` | Tracks go from easy to hard; every challenge has hints, an explanation and no text; hints are handed out one by one and the solution only for a real 100% match |
+| `tests/unit/daily.test.ts` | The daily challenge: the same all day, changes at midnight Mecca time, goes through every challenge before repeating |
+| `tests/unit/bidi.test.ts` | CSS snippets inside Arabic text stay in one left-to-right piece |
 | `tests/unit/tips.test.ts` | Every tip has Arabic and English text and really makes the code shorter |
 | `tests/e2e/navigation.spec.ts` | Language redirects, RTL/LTR, the language switcher, 404 pages, no sideways scrolling on phones |
-| `tests/e2e/challenges.spec.ts` | The list, target images, and that no page's HTML contains a reference solution |
+| `tests/e2e/challenges.spec.ts` | The list, target images, and that no page's HTML contains a reference solution, a hint or an explanation |
 | `tests/e2e/play.spec.ts` | Each solution reaches 100%, partial ones score in between, diff view, compare line + Shift, slider, drafts, start over, copying colours, line wrapping |
 | `tests/e2e/tips.spec.ts` | Every tip's before and after draw exactly the same picture; the tips page, its index and links |
+| `tests/e2e/learning.spec.ts` | Hints open in order and in the page's language; the solution unlocks only at 100%; tracks, solved marks and progress; the daily challenge |
 | `tests/e2e/without-supabase.spec.ts` | Without Supabase: submitting and the leaderboard say they're off, the live estimate still works |
 | `supabase/tests/scores.test.sql` | Profiles on sign-up, best-score rules, the 5-second limit, the leaderboard sum — and that players can't write scores or read others' code |
-| `tests/e2e-supabase/scoring.spec.ts` | A real player signs in, submits, gets an official score matching the estimate, sets a best, appears on both leaderboards right away (also for visitors who had the pages open); the API refuses forged scores |
+| `supabase/tests/hints.test.sql` | Hints open in order, are counted per challenge and noted on scores; players can't open or delete hints themselves |
+| `tests/e2e-supabase/scoring.spec.ts` | A real player signs in, submits, gets an official score matching the estimate, sets a best, appears on both leaderboards right away (also for visitors who had the pages open); a hint takes 10% off and stays open; the API refuses forged scores and free hints |
 
 Every end-to-end test also fails if the page logs an error to the console.
 
@@ -77,11 +82,20 @@ Every end-to-end test also fails if the page logs an error to the console.
 1. Every challenge has a **reference solution**. `npm run targets` renders each one in headless Chromium to `public/targets/<slug>.png`, so the browser only ever gets the image, never the reference code.
 2. **While you type**, your code is laid out in a hidden sandboxed iframe (scripts off, every request blocked), drawn onto a canvas through an SVG `<foreignObject>`, and compared with the target pixel by pixel using `pixelmatch`. In Chromium this matches a real screenshot exactly. That's the instant estimate.
 3. **When you submit**, the server renders your code in headless Chromium (JavaScript off, network cut) and compares it with the reference rendered by the same browser. That official score is saved through a database function only the server's secret key can call, so a score can't be forged from the browser or the API.
-4. **Points**: below 100% you get up to 600 (`600 × match⁴`); at 100% you get 600 plus a length bonus of up to 400 — full when your code is as short as the author's solution or shorter. Equal scores rank by shorter code, then by who got there first.
+4. **Points**: below 100% you get up to 600 (`600 × match⁴`); at 100% you get 600 plus a length bonus of up to 400 — full when your code is as short as the author's solution or shorter. Each hint opened on the challenge takes 10% off. Equal scores rank by shorter code, then by who got there first.
+
+## Learning
+
+- **25 challenges in 4 tracks** (basics, centering & layout, shapes, real UI), each track from easy to hard. Every challenge names the CSS skill it practises.
+- **Hints**: 1–3 per challenge, opened one at a time. Once scores are kept, each costs 10% of that challenge's score and needs sign-in (recorded in the database, so it can't be dodged).
+- **Explained solutions**: the author's code and an explanation, unlocked only when your code matches 100% in the official renderer (or you already scored 100%). Hints and explanations are never in the page itself.
+- **Progress**: challenges solved officially, or at 100% in your browser, are marked in the lists and tracks.
+- **Daily challenge**: the same for everyone each day, changing at midnight Mecca time; `/ar/daily` always points to it.
+- **No text in challenges**: fonts differ between systems, so a perfect match would depend on the player's computer.
 
 ## Adding or changing a challenge
 
-1. Edit `src/data/challenge-list.ts` (list every colour the reference uses).
+1. Edit `src/data/challenge-list.ts`: the reference, every colour it uses, its track and skill, 1–3 hints and an explanation (Arabic and English). No text in the target.
 2. Render the targets — needs Node 22.18+ and Playwright's Chromium once (`npx playwright install chromium`):
    ```bash
    npm run targets
@@ -98,7 +112,11 @@ Every end-to-end test also fails if the page logs an error to the console.
 | `src/app/auth/` | OAuth callback and sign-out |
 | `src/lib/supabase/` | Supabase clients: session (server/browser), public reads, and the server-only secret-key client |
 | `supabase/migrations/` | Database: profiles, submissions, best scores, leaderboard, row level security |
-| `src/data/challenge-list.ts` | Launch challenges and their reference solutions |
+| `src/data/challenge-list.ts` | Tracks, and the challenges with their reference solutions, hints and explanations |
+| `src/data/daily.ts` | Which challenge is today's |
+| `src/lib/actions/learning.ts` | Server Actions: hints (one at a time) and explained solutions (after 100%) |
+| `src/lib/progress.ts` · `src/components/progress/` | Solved marks and track progress |
+| `src/app/[lang]/tracks/` · `src/app/[lang]/daily/` | Learning tracks, and the link to today's challenge |
 | `src/data/challenges.ts` | Server-side access + build-time checks; the browser gets challenges without the reference |
 | `scripts/render-targets.mjs` | `npm run targets` — renders each reference to its target PNG |
 | `src/app/[lang]/challenges/[slug]/` | The challenge page |

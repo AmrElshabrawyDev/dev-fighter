@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { BidiText } from "@/components/BidiText";
 import { CodeBlock } from "@/components/CodeBlock";
 import { CodePreview } from "@/components/CodePreview";
 import { tips } from "@/data/tips";
@@ -49,7 +50,7 @@ export default async function TipsPage() {
                 <span className="font-mono text-base text-primary">{number(i)}</span>
                 {tip.title[locale]}
               </h2>
-              <p className="mt-3 leading-relaxed text-text-secondary">{tip.text[locale]}</p>
+              <p className="mt-3 leading-relaxed text-text-secondary">{locale === "ar" ? <BidiText text={tip.text.ar} /> : tip.text.en}</p>
 
               <div className="mt-5 grid gap-4 md:grid-cols-2">
                 {(["before", "after"] as const).map((side) => (
@@ -79,7 +80,7 @@ export default async function TipsPage() {
               {tip.note && (
                 <p className="mt-5 rounded-lg border border-info/30 bg-info/10 px-4 py-3 text-sm leading-relaxed text-text-primary">
                   <span className="font-bold text-info">{t.note} </span>
-                  {tip.note[locale]}
+                  {locale === "ar" ? <BidiText text={tip.note.ar} /> : tip.note.en}
                 </p>
               )}
             </article>

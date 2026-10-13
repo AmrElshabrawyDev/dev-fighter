@@ -11,7 +11,8 @@ export async function Header() {
   const links = [
     { href: `/${locale}/challenges`, label: nav.challenges },
     { href: `/${locale}/tips`, label: nav.tips },
-    { label: nav.tracks, soon: true },
+    { href: `/${locale}/tracks`, label: nav.tracks },
+    { href: `/${locale}/daily`, label: nav.daily },
     { label: nav.battles, soon: true },
     { href: `/${locale}/leaderboard`, label: nav.leaderboard },
   ];

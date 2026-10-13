@@ -14,7 +14,8 @@
     "signOut": "Sign out",
     "soon": "Soon",
     "switchTo": "العربية",
-    "menu": "Menu"
+    "menu": "Menu",
+    "daily": "Daily"
   },
   "home": {
     "eyebrow": "The Arabic-first CSS battle arena",
@@ -72,7 +73,8 @@
           "title": "Explained solutions",
           "text": "After you solve it, read how the best solutions work and pick up new tricks."
         }
-      ]
+      ],
+      "cta": "Start the learning tracks"
     },
     "battles": {
       "badge": "Coming soon",
@@ -86,7 +88,7 @@
   },
   "challenges": {
     "title": "Challenges",
-    "subtitle": "Pick a challenge and start. Your match updates live as you type.",
+    "subtitle": "25 challenges in four tracks, from a plain square to a full pricing card.",
     "play": "Play",
     "shape": "Shape",
     "component": "UI",
@@ -94,7 +96,23 @@
       "easy": "Easy",
       "medium": "Medium",
       "hard": "Hard"
-    }
+    },
+    "solved": "Solved",
+    "solvedHere": "Solved in your browser"
+  },
+  "tracks": {
+    "title": "Learning tracks",
+    "subtitle": "Challenges ordered from easiest to hardest, each teaching one new CSS idea. Hints and explained solutions wait in every challenge.",
+    "open": "Open the track",
+    "all": "All tracks",
+    "trackNumber": "Track {n}",
+    "count": "{n} challenges",
+    "progress": "{done} of {total} solved"
+  },
+  "daily": {
+    "title": "Today's challenge",
+    "subtitle": "A different challenge every day, the same for everyone; it changes at midnight Mecca time.",
+    "cta": "Play today's challenge"
   },
   "play": {
     "back": "All challenges",
@@ -144,7 +162,26 @@
     "topPlayers": "Top players on this challenge",
     "noScores": "No scores yet. Be the first to solve it!",
     "fullLeaderboard": "Full leaderboard",
-    "scoreLabel": "Score"
+    "scoreLabel": "Score",
+    "learn": "Learn",
+    "skill": "Skill",
+    "hints": "Hints",
+    "hintCost": "Each hint takes 10% off your score on this challenge.",
+    "hintFree": "Hints are free on this copy.",
+    "openHint": "Open hint {n} of {total}",
+    "hintConfirm": "Each hint takes 10% off your score on this challenge, in future submissions too. Continue?",
+    "signInForHints": "Sign in to open hints",
+    "hintErrors": {
+      "order": "Open the hints in order.",
+      "failed": "Couldn't open the hint. Please try again."
+    },
+    "hintsTaken": "With {n} hint(s): {percent}% off",
+    "solution": "Explained solution",
+    "solutionLocked": "Unlocks when your code reaches a 100% match.",
+    "showSolution": "Show the explained solution",
+    "checking": "Checking…",
+    "notSolved": "Your code doesn't reach a 100% official match yet.",
+    "authorSolution": "The author's solution ({chars} chars):"
   },
   "tips": {
     "title": "Tips & tricks for shorter code",

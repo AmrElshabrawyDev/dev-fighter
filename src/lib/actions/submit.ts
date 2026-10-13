@@ -20,6 +20,8 @@ export type SubmitResult =
       best: { score: number; chars: number; accuracy: number };
       /** the player's place on this challenge's leaderboard */
       rank: number;
+      /** hints open on this challenge (each took 10% off) */
+      hintsUsed: number;
     }
   | { ok: false; error: SubmitError };
 
@@ -55,7 +57,13 @@ export async function submitSolution(slug: string, code: string): Promise<Submit
     console.error("Scoring render failed", error);
     return { ok: false, error: "failed" };
   }
-  const score = scoreFor(accuracy, chars, parFor(challenge));
+  // hints opened on this challenge take their share off
+  const { count: hintsUsed } = await admin
+    .from("hint_unlocks")
+    .select("hint_index", { count: "exact", head: true })
+    .eq("user_id", user.id)
+    .eq("challenge_slug", slug);
+  const score = scoreFor(accuracy, chars, parFor(challenge), hintsUsed ?? 0);
   const percent = Math.floor(accuracy * 1_000_000) / 10_000; // 4 decimals, never rounded up to 100
 
   const { data, error } = await admin.rpc("record_submission", {
@@ -71,7 +79,7 @@ export async function submitSolution(slug: string, code: string): Promise<Submit
     return { ok: false, error: "failed" };
   }
 
-  const saved = data as { improved: boolean; best: { score: number; chars: number; accuracy: number }; rank: number };
+  const saved = data as { improved: boolean; best: { score: number; chars: number; accuracy: number }; rank: number; hintsUsed: number };
 
   return {
     ok: true,
@@ -81,5 +89,6 @@ export async function submitSolution(slug: string, code: string): Promise<Submit
     improved: saved.improved,
     best: { score: saved.best.score, chars: saved.best.chars, accuracy: Number(saved.best.accuracy) },
     rank: saved.rank,
+    hintsUsed: saved.hintsUsed,
   };
 }

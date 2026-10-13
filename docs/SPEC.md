@@ -3,7 +3,7 @@
 > Recreate the target with HTML & CSS. Closest match with the shortest code wins.
 > Arabic-first, real UI challenges, and live 1v1 battles.
 
-Status: **in progress** — stages 1–3 are built (see milestones). Open questions are at the end.
+Status: **in progress** — stages 1–4 are built (see milestones). Open questions are at the end.
 
 ---
 
@@ -138,7 +138,7 @@ Row-level security: anyone can read published challenges, profiles and leaderboa
 1. ✅ **Skeleton** — Next.js app, Arabic/English + RTL/LTR, design system, Supabase auth
 2. ✅ **Challenge engine** — editor, sandboxed preview, target, compare slider + diff view, live accuracy, drafts saved per challenge
 3. ✅ **Official scoring** — server render + pixel diff, submissions, best scores, leaderboards
-4. **Content & learning** — 20–30 challenges, tracks, hints, explanations, daily challenge
+4. ✅ **Content & learning** — 25 challenges in 4 tracks, hints (−10% each), explained solutions after 100%, daily challenge, progress
 5. **Polish & launch** — profiles, SEO/OG images, performance, deploy
 
 ---

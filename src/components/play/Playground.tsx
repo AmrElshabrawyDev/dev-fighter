@@ -4,15 +4,20 @@ import Link from "next/link";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import type { PublicChallenge } from "@/data/challenges";
 import type { Dictionary } from "@/i18n/get-dictionary";
+import type { Locale } from "@/i18n/config";
+import { openedHints } from "@/lib/actions/learning";
 import { useDraft } from "@/lib/drafts";
 import { previewDocument } from "@/lib/match/document";
 import { compare, formatAccuracy, loadTarget, renderCode, type Match } from "@/lib/match/engine";
+import { markSolvedHere } from "@/lib/progress";
 import { countChars, scoreFor } from "@/lib/scoring/score";
 import { CodeEditor } from "./CodeEditor";
+import { LearnPanel } from "./LearnPanel";
 import { SubmitPanel } from "./SubmitPanel";
 
 type Props = {
   challenge: PublicChallenge;
+  locale: Locale;
   t: Dictionary["play"];
   tipsHref: string;
   loginHref: string;
@@ -34,7 +39,7 @@ const starterCode = (color: string) => `<div></div>
 </style>
 `;
 
-export function Playground({ challenge, t, tipsHref, loginHref, canSubmit }: Props) {
+export function Playground({ challenge, locale, t, tipsHref, loginHref, canSubmit }: Props) {
   const { width, height } = challenge;
   const starter = starterCode(challenge.colors[1] ?? challenge.colors[0]);
 
@@ -48,6 +53,7 @@ export function Playground({ challenge, t, tipsHref, loginHref, canSubmit }: Pro
   const [vertical, setVertical] = useState(false); // held Shift: compare top/bottom
 
   const [copied, setCopied] = useState<string | null>(null);
+  const [hints, setHints] = useState<string[]>([]); // opened hints, in order
   const target = useRef<Promise<ImageData> | null>(null);
   const diffCanvas = useRef<HTMLCanvasElement>(null);
 
@@ -67,6 +73,21 @@ export function Playground({ challenge, t, tipsHref, loginHref, canSubmit }: Pro
       current = false;
     };
   }, [preview, challenge.target, width, height]);
+
+  // hints this player already opened (they keep costing points)
+  useEffect(() => {
+    if (!canSubmit) return;
+    let current = true;
+    openedHints(challenge.slug, locale).then((opened) => current && opened.length > 0 && setHints(opened));
+    return () => {
+      current = false;
+    };
+  }, [canSubmit, challenge.slug, locale]);
+
+  // a 100% live match counts as solved in this browser (tracks show it)
+  useEffect(() => {
+    if (match?.accuracy === 1) markSolvedHere(challenge.slug);
+  }, [match, challenge.slug]);
 
   // hold Shift to compare top/bottom instead of left/right
   useEffect(() => {
@@ -151,7 +172,7 @@ export function Playground({ challenge, t, tipsHref, loginHref, canSubmit }: Pro
             <div className="text-center">
               <p className="text-sm text-text-secondary">{t.estimatedScore}</p>
               <p data-testid="estimated-score" className="font-mono text-xl font-bold text-gold" dir="ltr">
-                {match ? scoreFor(match.accuracy, chars, challenge.par) : "…"}
+                {match ? scoreFor(match.accuracy, chars, challenge.par, canSubmit ? hints.length : 0) : "…"}
               </p>
             </div>
             <div className="text-end">
@@ -307,6 +328,19 @@ export function Playground({ challenge, t, tipsHref, loginHref, canSubmit }: Pro
           </div>
         </Panel>
 
+        <LearnPanel
+          slug={challenge.slug}
+          skill={challenge.skill}
+          hintCount={challenge.hintCount}
+          hints={hints}
+          onHintOpened={(text) => setHints((opened) => [...opened, text])}
+          matched={match?.accuracy === 1}
+          code={code}
+          locale={locale}
+          scoring={canSubmit}
+          loginHref={loginHref}
+          t={t}
+        />
       </div>
     </div>
   );

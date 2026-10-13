@@ -150,3 +150,50 @@ test("players only ever see their own code", async () => {
   const { data: seen } = await visitor.from("submissions").select("id");
   expect(seen).toEqual([]);
 });
+
+test("visitors are asked to sign in before opening a hint", async ({ page }) => {
+  const leaf = challenges.find((c) => c.slug === "leaf")!;
+  await page.goto(`/ar/challenges/${leaf.slug}`);
+  await expect(page.getByText("كل تلميح يخصم 10% من نقاطك في هذا التحدي.")).toBeVisible();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: /افتح التلميح 1/ }).click();
+  await expect(page.getByRole("link", { name: "سجّل دخولك لفتح التلميحات" })).toBeVisible();
+  await expect(page.getByTestId("hints")).toHaveCount(0);
+});
+
+test("a hint takes 10% off the official score, and stays open", async ({ page, context }) => {
+  test.setTimeout(60_000);
+  const leaf = challenges.find((c) => c.slug === "leaf")!;
+  await signIn(context);
+  await page.goto(`/ar/challenges/${leaf.slug}`);
+
+  // asked first, because it costs points
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: /افتح التلميح 1/ }).click();
+  await expect(page.getByTestId("hints").getByRole("listitem")).toHaveCount(1);
+
+  await setCode(page, leaf.reference);
+  await expect(page.getByTestId("match")).toHaveText("100.0%");
+  await expect(page.getByTestId("estimated-score")).toHaveText("900");
+
+  await page.waitForTimeout(5_500); // the earlier submissions' 5-second limit
+  await page.getByRole("button", { name: "أرسل الحل" }).click();
+  await expect(page.getByTestId("official-score")).toHaveText("900", { timeout: 15_000 });
+  await expect(page.getByTestId("official-result")).toContainText("مع 1 تلميح: خصم 10%");
+
+  const { data } = await admin.from("best_scores").select("score, hints_used").eq("user_id", userId).eq("challenge_slug", leaf.slug).single();
+  expect(data).toEqual({ score: 900, hints_used: 1 });
+
+  // the opened hint is still there after a reload, and still counts
+  await page.reload();
+  await expect(page.getByTestId("hints").getByRole("listitem")).toHaveCount(1);
+  await expect(page.getByTestId("estimated-score")).toHaveText("900");
+});
+
+test("a player can't open hints for free through the API", async () => {
+  const client = await asPlayer();
+  const { error } = await client.rpc("unlock_hint", { p_user: userId, p_slug: "leaf", p_index: 1 });
+  expect(error?.code).toBe("42501");
+  const deleted = await client.from("hint_unlocks").delete().eq("user_id", userId).select();
+  expect(deleted.error?.code).toBe("42501");
+});

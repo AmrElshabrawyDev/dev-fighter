@@ -23,6 +23,13 @@ describe("scoreFor", () => {
     expect(scoreFor(1, 400, 100)).toBe(700);
   });
 
+  it("takes 10% off for each hint opened", () => {
+    expect(scoreFor(1, 100, 100, 1)).toBe(900);
+    expect(scoreFor(1, 100, 100, 3)).toBe(700);
+    expect(scoreFor(0.9, 100, 100, 2)).toBe(315); // 394 × 0.8
+    expect(scoreFor(1, 100, 100, 20)).toBe(0); // never negative
+  });
+
   it("never goes above the maximum or below zero", () => {
     expect(scoreFor(1, 0, 100)).toBe(MAX_SCORE);
     expect(scoreFor(-1, 10, 100)).toBe(0);

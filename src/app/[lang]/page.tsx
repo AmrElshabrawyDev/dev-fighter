@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { DailyCard, DailyCardSkeleton } from "@/components/DailyCard";
 import { TargetImage } from "@/components/TargetImage";
 import { challenges, toPublic } from "@/data/challenges";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
@@ -7,7 +9,7 @@ const demo = toPublic(challenges.find((c) => c.slug === "twin-moons")!);
 
 export default async function Home() {
   const locale = await getLocale();
-  const { home } = await getDictionary();
+  const { home, daily } = await getDictionary();
   const shape = toPublic(challenges.find((c) => c.type === "shape" && c.difficulty === "medium")!);
   const component = toPublic(challenges.find((c) => c.slug === "profile-card")!);
 
@@ -99,6 +101,13 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* Today's challenge */}
+      <section className="mx-auto max-w-6xl px-4 pt-6">
+        <Suspense fallback={<DailyCardSkeleton />}>
+          <DailyCard locale={locale} t={daily} />
+        </Suspense>
+      </section>
+
       {/* How it works */}
       <section id="how" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16">
         <h2 className="mb-10 text-3xl font-black">{home.how.title}</h2>
@@ -148,6 +157,9 @@ export default async function Home() {
             </div>
           ))}
         </div>
+        <Link href={`/${locale}/tracks`} className="mt-8 inline-block rounded-lg border border-border-strong px-6 py-3 font-semibold transition hover:border-primary">
+          {home.learn.cta}
+        </Link>
       </section>
 
       {/* Battles teaser */}

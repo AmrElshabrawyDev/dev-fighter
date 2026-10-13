@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { TargetImage } from "@/components/TargetImage";
-import { challenges, toPublic } from "@/data/challenges";
+import { Suspense } from "react";
+import { ChallengeCard } from "@/components/ChallengeCard";
+import { DailyCard, DailyCardSkeleton } from "@/components/DailyCard";
+import { ProgressProvider, TrackProgress } from "@/components/progress/Progress";
+import { toPublic, trackChallenges, tracks } from "@/data/challenges";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -9,50 +12,49 @@ export async function generateMetadata(): Promise<Metadata> {
   return { title: t.title, description: t.subtitle };
 }
 
-const difficultyColor = { easy: "text-success", medium: "text-gold", hard: "text-accent" } as const;
-
 export default async function ChallengesPage() {
   const locale = await getLocale();
-  const { challenges: t } = await getDictionary();
+  const dict = await getDictionary();
+  const t = dict.challenges;
   return (
     <div className="mx-auto max-w-6xl px-4 py-14">
       <h1 className="text-4xl font-black">{t.title}</h1>
       <p className="mt-3 text-lg text-text-secondary">{t.subtitle}</p>
 
-      <ul className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-        {challenges.map(toPublic).map((c) => (
-          <li key={c.slug} className="relative flex flex-col gap-4 rounded-xl border border-border-subtle bg-bg-elevated p-4 transition hover:border-primary/60">
-            <div className="grid place-items-center rounded-lg bg-bg-base p-3">
-              <TargetImage challenge={c} size={280} label={c.title[locale]} />
-            </div>
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="font-mono text-xs text-text-tertiary">#{String(c.number).padStart(2, "0")}</p>
-                <h2 className="text-lg font-bold">
-                  {/* the whole card is the link (its ::after covers the card) */}
-                  <Link href={`/${locale}/challenges/${c.slug}`} className="after:absolute after:inset-0 after:rounded-xl">
-                    {c.title[locale]}
-                  </Link>
-                </h2>
+      <div className="mt-8">
+        <Suspense fallback={<DailyCardSkeleton />}>
+          <DailyCard locale={locale} t={dict.daily} />
+        </Suspense>
+      </div>
+
+      <ProgressProvider>
+        {tracks.map((track) => {
+          const list = trackChallenges(track).map(toPublic);
+          return (
+            <section key={track.slug} className="mt-14" aria-labelledby={`track-${track.slug}`}>
+              <div className="mb-5 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
+                <div>
+                  <h2 id={`track-${track.slug}`} className="text-2xl font-black">
+                    {track.title[locale]}
+                  </h2>
+                  <p className="mt-1 text-text-secondary">{track.description[locale]}</p>
+                </div>
+                <Link href={`/${locale}/tracks/${track.slug}`} className="text-sm text-secondary hover:underline">
+                  {dict.tracks.open}
+                </Link>
               </div>
-              <div className="flex gap-2 text-xs">
-                <span className="rounded bg-bg-surface px-2 py-1 text-text-secondary">{t[c.type]}</span>
-                <span className={`rounded bg-bg-surface px-2 py-1 ${difficultyColor[c.difficulty]}`}>{t.difficulty[c.difficulty]}</span>
+              <div className="mb-5 max-w-sm">
+                <TrackProgress slugs={list.map((c) => c.slug)} label={dict.tracks.progress} />
               </div>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex gap-1.5" dir="ltr">
-                {c.colors.map((color) => (
-                  <span key={color} title={color} className="size-5 rounded-full border border-border-strong" style={{ background: color }} />
+              <ul className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {list.map((c) => (
+                  <ChallengeCard key={c.slug} challenge={c} locale={locale} t={t} />
                 ))}
-              </div>
-              <span aria-hidden className="rounded-md bg-primary px-4 py-1.5 text-sm font-bold text-on-primary">
-                {t.play}
-              </span>
-            </div>
-          </li>
-        ))}
-      </ul>
+              </ul>
+            </section>
+          );
+        })}
+      </ProgressProvider>
     </div>
   );
 }
