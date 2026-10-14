@@ -4,7 +4,7 @@
 
 An Arabic-first CSS challenge platform — shape and real UI-component challenges, learning tracks, and (soon) live 1v1 battles.
 
-> 🚧 Release 1 in progress — stages 1 (skeleton), 2 (challenge engine), 3 (official scoring and leaderboards) and 4 (content and learning) are done. See the product spec: [docs/SPEC.md](docs/SPEC.md)
+> Release 1 is built: skeleton, challenge engine, official scoring and leaderboards, content and learning, and profiles, sharing and SEO. Next: [deploying it](docs/DEPLOY.md). Product spec: [docs/SPEC.md](docs/SPEC.md)
 
 ## Stack
 
@@ -40,7 +40,7 @@ Without Supabase keys the whole site works: you can play every challenge with th
    - **GitHub**: create an OAuth app at github.com → Settings → Developer settings, with the callback URL `https://<project-ref>.supabase.co/auth/v1/callback`, then paste its client ID and secret into Supabase.
    - **Google**: same idea in Google Cloud Console (OAuth client, same callback URL).
 5. **Redirect URLs** (Authentication → URL Configuration): set the Site URL to your domain and add `http://localhost:3000/auth/callback` and `https://<your-domain>/auth/callback`.
-6. **On Vercel**: add the same three variables under Project → Settings → Environment Variables. Scoring runs headless Chromium in a serverless function (`@sparticuz/chromium`), so give functions at least 1 GB of memory.
+6. **On Vercel**: add the same three variables, plus `NEXT_PUBLIC_SITE_URL` (your domain), under Project → Settings → Environment Variables. Scoring and player share cards run headless Chromium in a serverless function (`@sparticuz/chromium`), so keep functions at 1 GB of memory or more. The full checklist: [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ### Or run Supabase on your machine
 
@@ -70,10 +70,13 @@ npm run test:e2e:supabase   # sign in → submit → leaderboard, against the lo
 | `tests/e2e/play.spec.ts` | Each solution reaches 100%, partial ones score in between, diff view, compare line + Shift, slider, drafts, start over, copying colours, line wrapping |
 | `tests/e2e/tips.spec.ts` | Every tip's before and after draw exactly the same picture; the tips page, its index and links |
 | `tests/e2e/learning.spec.ts` | Hints open in order and in the page's language; the solution unlocks only at 100%; tracks, solved marks and progress; the daily challenge |
-| `tests/e2e/without-supabase.spec.ts` | Without Supabase: submitting and the leaderboard say they're off, the live estimate still works |
+| `tests/unit/share.test.ts` | Every share card exists, is 1200×630 and up to date; player cards show the right numbers, can't be broken by a name, only fetch avatars from GitHub/Google, and render in the real browser |
+| `tests/unit/seo.test.ts` | Canonical and hreflang links, share images, the sitemap (every page, both languages), robots.txt, the site address |
+| `tests/e2e/seo.spec.ts` | Each page's head (canonical, hreflang, share card, structured data); every sitemap page loads and names itself; robots.txt; sharing copies the right message and link |
+| `tests/e2e/without-supabase.spec.ts` | Without Supabase: submitting and the leaderboard say they're off, the live estimate still works, there are no profiles |
 | `supabase/tests/scores.test.sql` | Profiles on sign-up, best-score rules, the 5-second limit, the leaderboard sum — and that players can't write scores or read others' code |
 | `supabase/tests/hints.test.sql` | Hints open in order, are counted per challenge and noted on scores; players can't open or delete hints themselves |
-| `tests/e2e-supabase/scoring.spec.ts` | A real player signs in, submits, gets an official score matching the estimate, sets a best, appears on both leaderboards right away (also for visitors who had the pages open); a hint takes 10% off and stays open; the API refuses forged scores and free hints |
+| `tests/e2e-supabase/scoring.spec.ts` | A real player signs in, submits, gets an official score matching the estimate, sets a best, appears on both leaderboards right away (also for visitors who had the pages open), shares the result; a hint takes 10% off and stays open; the API refuses forged scores and free hints; their public profile and share card show their scores but never their code; unknown players are a 404 |
 
 Every end-to-end test also fails if the page logs an error to the console.
 
@@ -93,6 +96,13 @@ Every end-to-end test also fails if the page logs an error to the console.
 - **Daily challenge**: the same for everyone each day, changing at midnight Mecca time; `/ar/daily` always points to it.
 - **No text in challenges**: fonts differ between systems, so a perfect match would depend on the player's computer.
 
+## Profiles, sharing and search
+
+- **Player profiles** at `/ar/u/<username>`: total score, rank, perfect matches, progress in each track, and the best score on every challenge played. The code itself is never shown. Names on the leaderboards link to them, and so does your name in the header.
+- **Share cards**: the image a link shows on WhatsApp, X, LinkedIn… The site's and each challenge's (in both languages) are drawn by `npm run targets` into `public/og/`; a player's card is drawn on request with their current scores (`/ar/u/<username>/card.png`). They're HTML pages drawn by headless Chromium, which gets Arabic right.
+- **Share buttons** on challenges, on official results ("I scored 1000 on…") and on profiles: the device's share sheet, or copy the link, plus X, LinkedIn and WhatsApp.
+- **Search**: each page names its address in both languages (canonical + hreflang), `/sitemap.xml` lists every page, `/robots.txt` keeps sign-in out, and pages carry structured data (website, exercise, profile). Set `NEXT_PUBLIC_SITE_URL` to your domain so all of these use it.
+
 ## Adding or changing a challenge
 
 1. Edit `src/data/challenge-list.ts`: the reference, every colour it uses, its track and skill, 1–3 hints and an explanation (Arabic and English). No text in the target.
@@ -100,7 +110,7 @@ Every end-to-end test also fails if the page logs an error to the console.
    ```bash
    npm run targets
    ```
-3. Commit the PNGs and `src/data/targets.json` with your change. The build fails if a target is missing or out of date.
+3. Commit the PNGs, `src/data/targets.json` and `src/data/og.json` with your change (it also redraws the share cards). The build fails if a target is missing or out of date, and the tests fail if a share card is.
 
 ## Project map
 
@@ -118,7 +128,7 @@ Every end-to-end test also fails if the page logs an error to the console.
 | `src/lib/progress.ts` · `src/components/progress/` | Solved marks and track progress |
 | `src/app/[lang]/tracks/` · `src/app/[lang]/daily/` | Learning tracks, and the link to today's challenge |
 | `src/data/challenges.ts` | Server-side access + build-time checks; the browser gets challenges without the reference |
-| `scripts/render-targets.mjs` | `npm run targets` — renders each reference to its target PNG |
+| `scripts/render-targets.mjs` | `npm run targets` — renders each reference to its target PNG, then the share cards |
 | `src/app/[lang]/challenges/[slug]/` | The challenge page |
 | `src/components/play/` | Editor (CodeMirror), live preview, compare slider, diff view, match meter, submit panel, top players |
 | `src/lib/match/` | The preview document (CSP sandbox) and the in-browser match engine |
@@ -128,6 +138,10 @@ Every end-to-end test also fails if the page logs an error to the console.
 | `src/data/tips.ts` · `src/app/[lang]/tips/` | Tips & tricks for shorter code (before/after examples) |
 | `src/components/CodeBlock.tsx` | Code samples highlighted on the server, in the editor's colours |
 | `src/lib/drafts.ts` | Keeps your code per challenge in localStorage |
+| `src/app/[lang]/u/[username]/` · `src/lib/profiles.ts` | Public player profiles and their share card |
+| `src/lib/og/` | Share cards: the design (`card.ts`), what goes on each (`cards.ts`), drawing player cards (`render.ts`) |
+| `src/lib/seo.ts` · `src/lib/site.ts` · `src/app/sitemap.ts` · `src/app/robots.ts` | Page metadata, the site's address, sitemap and robots.txt |
+| `docs/DEPLOY.md` | Deploying to Vercel + Supabase, and what to check after |
 | `tests/` | Unit (`tests/unit`), end-to-end (`tests/e2e`) and Supabase end-to-end tests (`tests/e2e-supabase`) |
 
 Built by [Amr Elshabrawy](https://amrelshabrawydev.github.io).

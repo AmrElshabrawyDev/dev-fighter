@@ -125,6 +125,24 @@ test("a signed-in player submits, gets an official score and climbs the leaderbo
   await expect(page.getByTestId("personal-best")).toContainText("1000");
 });
 
+test("a result can be shared, with the score in the message", async ({ page, context }) => {
+  test.setTimeout(60_000);
+  await signIn(context);
+  await page.goto(`/en/challenges/${hexagon.slug}`);
+  await setCode(page, hexagon.reference);
+  await expect(page.getByTestId("match")).toHaveText("100.0%");
+  await page.waitForTimeout(5_500); // the 5-second limit since the last submission
+  await page.getByRole("button", { name: "Submit" }).click();
+  const result = page.getByTestId("official-result");
+  await expect(page.getByTestId("official-score")).toHaveText("1000", { timeout: 15_000 });
+
+  const x = result.getByRole("link", { name: "X" });
+  const href = new URL((await x.getAttribute("href"))!);
+  expect(href.host).toBe("x.com");
+  expect(href.searchParams.get("text")).toBe(`I scored 1000 points on “${hexagon.title.en}” in Dev Fighter (100% match, ${[...hexagon.reference].length} chars). Can you beat me?`);
+  expect(href.searchParams.get("url")).toMatch(new RegExp(`/en/challenges/${hexagon.slug}$`));
+});
+
 test("a player can't write a score themselves, even through the API", async () => {
   const client = await asPlayer();
   const forged = await client.rpc("record_submission", { p_user: userId, p_slug: "twin-moons", p_code: "x", p_accuracy: 100, p_score: 1000 });
@@ -196,4 +214,61 @@ test("a player can't open hints for free through the API", async () => {
   expect(error?.code).toBe("42501");
   const deleted = await client.from("hint_unlocks").delete().eq("user_id", userId).select();
   expect(deleted.error?.code).toBe("42501");
+});
+
+test("a player's public profile shows their scores, never their code", async ({ page }) => {
+  // from the leaderboard to the profile
+  await page.goto("/ar/leaderboard");
+  const row = page.getByRole("row").filter({ hasText: `@${player.username}` });
+  const rank = (await row.getByRole("cell").first().innerText()).trim(); // "#3"
+  await row.getByRole("link").click();
+  await expect(page).toHaveURL(new RegExp(`/ar/u/${player.username}$`));
+
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(player.name);
+  await expect(page.getByTestId("profile-score")).toHaveText("1,900"); // 1000 + 900 (the hint)
+  await expect(page.getByTestId("profile-rank")).toHaveText(rank);
+  await expect(page.getByTestId("profile-perfect")).toHaveText("2");
+  await expect(page.getByTestId("profile-played")).toHaveText("2");
+
+  const leaf = challenges.find((c) => c.slug === "leaf")!;
+  const scores = page.getByTestId("profile-scores").getByRole("listitem");
+  await expect(scores).toHaveCount(2);
+  await expect(scores.filter({ hasText: hexagon.title.ar })).toContainText("1000");
+  await expect(scores.filter({ hasText: leaf.title.ar })).toContainText("900");
+  await expect(scores.filter({ hasText: leaf.title.ar })).toContainText("تلميحات: 1");
+  await scores.filter({ hasText: hexagon.title.ar }).getByRole("link").click();
+  await expect(page).toHaveURL(new RegExp(`/ar/challenges/${hexagon.slug}$`));
+});
+
+test("a profile's page and share card are public, and its code stays private", async ({ request }) => {
+  const html = (await (await request.get(`/ar/u/${player.username}`, { headers: { cookie: "" } })).text()).replaceAll("<!-- -->", "");
+  // the code they submitted is nowhere on it
+  expect(html).not.toContain("width:180px;height:200px");
+  expect(html).not.toContain(hexagon.reference.split("\n").sort((a, b) => b.length - a.length)[0]);
+  // shared links show the player's card, and point at the profile in both languages
+  const site = "http://localhost:\\d+";
+  expect(html).toMatch(new RegExp(`<meta property="og:image" content="${site}/ar/u/${player.username}/card.png"`));
+  expect(html).toMatch(new RegExp(`<link rel="canonical" href="${site}/ar/u/${player.username}"`));
+  expect(html).toMatch(new RegExp(`<link rel="alternate" hrefLang="en" href="${site}/en/u/${player.username}"`));
+  expect(html).toContain('"@type":"ProfilePage"');
+
+  const card = await request.get(`/en/u/${player.username}/card.png`);
+  expect(card.status()).toBe(200);
+  expect(card.headers()["content-type"]).toBe("image/png");
+  const png = await card.body();
+  expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630]);
+});
+
+test("the header links a signed-in player to their profile", async ({ page, context }) => {
+  await signIn(context);
+  await page.goto("/en/challenges");
+  await page.locator(`header a[href="/en/u/${player.username}"]`).click();
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText(player.name);
+});
+
+test("an unknown player is not found, and has no card", async ({ page, request }) => {
+  await page.goto("/ar/u/nobody-here-123");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("اللاعب غير موجود");
+  await expect(page.locator('meta[name="robots"]').first()).toHaveAttribute("content", /noindex/);
+  expect((await request.get("/ar/u/nobody-here-123/card.png")).status()).toBe(404);
 });

@@ -23,6 +23,8 @@ type Props = {
   loginHref: string;
   /** official submissions are set up on this server */
   canSubmit: boolean;
+  /** the challenge's path and the share texts */
+  share: { path: string; t: Dictionary["share"] };
 };
 type Mode = "slide" | "diff";
 
@@ -39,7 +41,7 @@ const starterCode = (color: string) => `<div></div>
 </style>
 `;
 
-export function Playground({ challenge, locale, t, tipsHref, loginHref, canSubmit }: Props) {
+export function Playground({ challenge, locale, t, tipsHref, loginHref, canSubmit, share }: Props) {
   const { width, height } = challenge;
   const starter = starterCode(challenge.colors[1] ?? challenge.colors[0]);
 
@@ -190,7 +192,14 @@ export function Playground({ challenge, locale, t, tipsHref, loginHref, canSubmi
             </Link>
           </p>
           <p className="mt-1 text-xs text-text-tertiary">{t.par.replace("{par}", String(challenge.par))}</p>
-          <SubmitPanel slug={challenge.slug} code={code} enabled={canSubmit} loginHref={loginHref} t={t} />
+          <SubmitPanel
+            slug={challenge.slug}
+            code={code}
+            enabled={canSubmit}
+            loginHref={loginHref}
+            t={t}
+            share={{ ...share, title: challenge.title[locale] }}
+          />
         </section>
         <Panel
           title={t.output}

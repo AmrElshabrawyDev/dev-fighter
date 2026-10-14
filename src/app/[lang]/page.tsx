@@ -3,18 +3,32 @@ import { Suspense } from "react";
 import { DailyCard, DailyCardSkeleton } from "@/components/DailyCard";
 import { TargetImage } from "@/components/TargetImage";
 import { challenges, toPublic } from "@/data/challenges";
+import { JsonLd } from "@/components/JsonLd";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
+import { absoluteUrl } from "@/lib/site";
 
 const demo = toPublic(challenges.find((c) => c.slug === "twin-moons")!);
 
 export default async function Home() {
   const locale = await getLocale();
-  const { home, daily } = await getDictionary();
+  const { home, daily, meta } = await getDictionary();
   const shape = toPublic(challenges.find((c) => c.type === "shape" && c.difficulty === "medium")!);
   const component = toPublic(challenges.find((c) => c.slug === "profile-card")!);
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Dev Fighter",
+          alternateName: meta.title,
+          description: meta.description,
+          url: absoluteUrl(`/${locale}`),
+          inLanguage: locale,
+          creator: { "@type": "Person", name: "Amr Elshabrawy", url: "https://amrelshabrawydev.github.io" },
+        }}
+      />
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="bg-grid pointer-events-none absolute inset-0" />

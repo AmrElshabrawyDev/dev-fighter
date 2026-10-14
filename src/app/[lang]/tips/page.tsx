@@ -5,10 +5,11 @@ import { CodeBlock } from "@/components/CodeBlock";
 import { CodePreview } from "@/components/CodePreview";
 import { tips } from "@/data/tips";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { tips: t } = await getDictionary();
-  return { title: t.title, description: t.metaDescription };
+  const { tips: t, meta } = await getDictionary();
+  return pageMetadata({ locale: await getLocale(), path: "/tips", title: t.title, description: t.metaDescription, siteTitle: meta.title });
 }
 
 export default async function TipsPage() {

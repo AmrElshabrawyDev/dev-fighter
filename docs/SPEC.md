@@ -3,7 +3,7 @@
 > Recreate the target with HTML & CSS. Closest match with the shortest code wins.
 > Arabic-first, real UI challenges, and live 1v1 battles.
 
-Status: **in progress** — stages 1–4 are built (see milestones). Open questions are at the end.
+Status: **release 1 built** — stages 1–5 are done (see milestones); next is deploying it ([DEPLOY.md](DEPLOY.md)). Open questions are at the end.
 
 ---
 
@@ -93,7 +93,7 @@ Every challenge is defined by a **reference solution** (HTML + CSS written by th
 | `/[locale]/tracks/[slug]` | A learning track and progress |
 | `/[locale]/daily` | Today's challenge |
 | `/[locale]/leaderboard` | Global and per-challenge rankings |
-| `/[locale]/u/[username]` | Public profile: score, solved challenges, best solutions |
+| `/[locale]/u/[username]` | Public profile: score, rank, track progress, best score on each challenge (the code itself stays private) |
 | `/[locale]/login` | GitHub / Google sign-in |
 
 `locale` = `ar` (default) or `en`.
@@ -139,7 +139,7 @@ Row-level security: anyone can read published challenges, profiles and leaderboa
 2. ✅ **Challenge engine** — editor, sandboxed preview, target, compare slider + diff view, live accuracy, drafts saved per challenge
 3. ✅ **Official scoring** — server render + pixel diff, submissions, best scores, leaderboards
 4. ✅ **Content & learning** — 25 challenges in 4 tracks, hints (−10% each), explained solutions after 100%, daily challenge, progress
-5. **Polish & launch** — profiles, SEO/OG images, performance, deploy
+5. ✅ **Polish & launch** — public profiles, share cards (site, challenges, players) and share buttons, SEO (canonical + hreflang, sitemap, robots, structured data), performance, deploy guide
 
 ---
 

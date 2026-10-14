@@ -28,7 +28,7 @@ export async function TopPlayers({ slug, locale, t }: { slug: string; locale: Lo
           {rows.map((row) => (
             <li key={row.username} className="flex items-center gap-3 rounded-lg px-2 py-1.5 odd:bg-bg-base/40">
               <span className={`w-7 shrink-0 font-mono text-sm font-bold ${medal[row.rank - 1] ?? "text-text-tertiary"}`}>#{row.rank}</span>
-              <PlayerName player={row} />
+              <PlayerName player={row} href={`/${locale}/u/${row.username}`} />
               <span className="ms-auto flex shrink-0 items-baseline gap-4 font-mono text-sm">
                 <span className="hidden text-text-tertiary sm:inline" dir="ltr">
                   {row.accuracy === 100 ? "100" : row.accuracy.toFixed(1)}%

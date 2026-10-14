@@ -5,6 +5,7 @@ import { useEffect, useState, useTransition } from "react";
 import type { Dictionary } from "@/i18n/get-dictionary";
 import { submitSolution, type SubmitResult } from "@/lib/actions/submit";
 import { createClient } from "@/lib/supabase/client";
+import { ShareButton } from "@/components/ShareButton";
 
 type Props = {
   slug: string;
@@ -13,12 +14,14 @@ type Props = {
   enabled: boolean;
   loginHref: string;
   t: Dictionary["play"];
+  /** for sharing a result: the challenge's title and path */
+  share: { title: string; path: string; t: Dictionary["share"] };
 };
 
 type Best = { score: number; chars: number };
 
 /** The official submission: sign-in state, the submit button, and the result */
-export function SubmitPanel({ slug, code, enabled, loginHref, t }: Props) {
+export function SubmitPanel({ slug, code, enabled, loginHref, t, share }: Props) {
   const [signedIn, setSignedIn] = useState<boolean | null>(null);
   const [best, setBest] = useState<Best | null>(null);
   const [result, setResult] = useState<SubmitResult | null>(null);
@@ -104,6 +107,18 @@ export function SubmitPanel({ slug, code, enabled, loginHref, t }: Props) {
           )}
           {result.improved && <p className="mt-2 font-bold text-success">{t.newBest}</p>}
           <p className="mt-1 text-text-secondary">{fill(t.rank, { rank: result.rank })}</p>
+          <div className="mt-3 border-t border-success/20 pt-3">
+            <ShareButton
+              path={share.path}
+              text={fill(share.t.result, {
+                score: result.score,
+                title: share.title,
+                accuracy: result.accuracy === 100 ? "100" : result.accuracy.toFixed(1),
+                chars: result.chars,
+              })}
+              t={share.t}
+            />
+          </div>
         </div>
       )}
       {result && !result.ok && (

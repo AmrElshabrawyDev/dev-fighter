@@ -29,6 +29,8 @@ export type CurrentUser = {
   id: string;
   name: string;
   avatarUrl?: string;
+  /** their public profile's username (null if the profile couldn't be read) */
+  username: string | null;
 };
 
 /** The signed-in user, or null. Reads cookies, so callers render inside <Suspense>. */
@@ -39,9 +41,11 @@ export async function getCurrentUser(): Promise<CurrentUser | null> {
   const user = data.user;
   if (!user) return null;
   const meta = user.user_metadata ?? {};
+  const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).maybeSingle();
   return {
     id: user.id,
     name: meta.user_name ?? meta.full_name ?? meta.name ?? user.email?.split("@")[0] ?? "player",
     avatarUrl: meta.avatar_url ?? meta.picture,
+    username: profile?.username ?? null,
   };
 }

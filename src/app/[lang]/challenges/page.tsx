@@ -6,10 +6,11 @@ import { DailyCard, DailyCardSkeleton } from "@/components/DailyCard";
 import { ProgressProvider, TrackProgress } from "@/components/progress/Progress";
 import { toPublic, trackChallenges, tracks } from "@/data/challenges";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { challenges: t } = await getDictionary();
-  return { title: t.title, description: t.subtitle };
+  const { challenges: t, meta } = await getDictionary();
+  return pageMetadata({ locale: await getLocale(), path: "/challenges", title: t.title, description: t.subtitle, siteTitle: meta.title });
 }
 
 export default async function ChallengesPage() {

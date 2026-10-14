@@ -81,6 +81,19 @@ export async function renderPixels(code: string, width: number, height: number):
   }
 }
 
+/** Screenshot a whole HTML page (share cards) as a PNG */
+export async function renderHtml(html: string, width: number, height: number): Promise<Buffer> {
+  const { context } = await getRenderer();
+  const page = await context.newPage();
+  try {
+    await page.setViewportSize({ width, height });
+    await page.setContent(html, { waitUntil: "load", timeout: RENDER_TIMEOUT });
+    return await page.screenshot({ type: "png", timeout: RENDER_TIMEOUT });
+  } finally {
+    await page.close();
+  }
+}
+
 // reference renders, kept per process (they only change with a new deploy)
 const targets = new Map<string, Promise<Uint8Array>>();
 

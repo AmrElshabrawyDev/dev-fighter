@@ -19,3 +19,10 @@ test("the leaderboard says it isn't enabled, and explains the scoring", async ({
   await expect(page.getByText("لوحة المتصدرين غير مفعّلة على هذه النسخة.")).toBeVisible();
   await expect(page.getByRole("heading", { name: "كيف تُحسب النقاط؟" })).toBeVisible();
 });
+
+test("player profiles need Supabase: without it there are none", async ({ page, request }) => {
+  await page.goto("/en/u/someone");
+  await expect(page.getByRole("heading", { level: 1 })).toHaveText("Player not found");
+  await expect(page.getByRole("link", { name: "Leaderboard" }).last()).toHaveAttribute("href", "/en/leaderboard");
+  expect((await request.get("/en/u/someone/card.png")).status()).toBe(404);
+});

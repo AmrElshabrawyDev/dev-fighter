@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 /**
  * Which challenges a player has solved:
@@ -66,10 +66,12 @@ export function useProgress(): Progress {
   const [official, setOfficial] = useState<Set<string>>(() => new Set());
 
   useEffect(() => {
-    const supabase = createClient();
-    if (!supabase) return;
+    if (!isSupabaseConfigured) return;
     let current = true;
-    supabase.auth.getUser().then(async ({ data }) => {
+    // loaded on demand: the lists render (and work) without waiting for Supabase's library
+    import("@/lib/supabase/client").then(async ({ createClient }) => {
+      const supabase = createClient()!;
+      const { data } = await supabase.auth.getUser();
       if (!current || !data.user) return;
       const { data: rows } = await supabase.from("best_scores").select("challenge_slug").eq("user_id", data.user.id).eq("accuracy", 100);
       if (current && rows) setOfficial(new Set(rows.map((r) => r.challenge_slug as string)));

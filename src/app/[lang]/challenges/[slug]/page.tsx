@@ -6,6 +6,11 @@ import { Playground } from "@/components/play/Playground";
 import { challenges, getChallenge, toPublic } from "@/data/challenges";
 import { TopPlayers } from "@/components/play/TopPlayers";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
+import { cardImage } from "@/lib/og/cards";
+import { pageMetadata } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/site";
+import { ShareButton } from "@/components/ShareButton";
+import { JsonLd } from "@/components/JsonLd";
 import { isScoringConfigured } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
@@ -17,8 +22,16 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/challenges
   const challenge = getChallenge((await params).slug);
   if (!challenge) return {};
   const locale = await getLocale();
-  const { play } = await getDictionary();
-  return { title: challenge.title[locale], description: play.metaDescription.replace("{title}", challenge.title[locale]) };
+  const { play, share, meta } = await getDictionary();
+  const title = challenge.title[locale];
+  return pageMetadata({
+    locale,
+    path: `/challenges/${challenge.slug}`,
+    title,
+    description: play.metaDescription.replace("{title}", title),
+    image: { url: cardImage.challenge(locale, challenge.slug), alt: share.imageAlt.replace("{title}", title) },
+    siteTitle: meta.title,
+  });
 }
 
 const difficultyColor = { easy: "text-success", medium: "text-gold", hard: "text-accent" } as const;
@@ -40,9 +53,27 @@ async function Challenge({ params }: { params: PageProps<"/[lang]/challenges/[sl
   const locale = await getLocale();
   const dict = await getDictionary();
   const t = dict.challenges;
+  const path = `/${locale}/challenges/${challenge.slug}`;
+  const url = absoluteUrl(path);
 
   return (
     <>
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "LearningResource",
+          name: challenge.title[locale],
+          description: dict.play.metaDescription.replace("{title}", challenge.title[locale]),
+          url,
+          image: absoluteUrl(cardImage.challenge(locale, challenge.slug)),
+          inLanguage: locale,
+          learningResourceType: "Exercise",
+          educationalLevel: t.difficulty[challenge.difficulty],
+          teaches: challenge.skill,
+          isAccessibleForFree: true,
+          isPartOf: { "@type": "WebSite", name: "Dev Fighter", url: absoluteUrl(`/${locale}`) },
+        }}
+      />
       <div className="mb-5 flex flex-wrap items-center gap-x-4 gap-y-2">
         <Link href={`/${locale}/challenges`} className="text-sm text-text-secondary transition hover:text-primary">
           <span aria-hidden className="inline-block rtl:rotate-180">←</span> {dict.play.back}
@@ -55,6 +86,9 @@ async function Challenge({ params }: { params: PageProps<"/[lang]/challenges/[sl
           <span className="rounded bg-bg-surface px-2 py-1 text-text-secondary">{t[challenge.type]}</span>
           <span className={`rounded bg-bg-surface px-2 py-1 ${difficultyColor[challenge.difficulty]}`}>{t.difficulty[challenge.difficulty]}</span>
         </div>
+        <div className="ms-auto">
+          <ShareButton path={path} text={dict.share.challenge.replace("{title}", challenge.title[locale])} t={dict.share} />
+        </div>
       </div>
       <Playground
         challenge={challenge}
@@ -63,6 +97,7 @@ async function Challenge({ params }: { params: PageProps<"/[lang]/challenges/[sl
         tipsHref={`/${locale}/tips`}
         loginHref={`/${locale}/login?next=${encodeURIComponent(`/${locale}/challenges/${challenge.slug}`)}`}
         canSubmit={isScoringConfigured && isSupabaseConfigured}
+        share={{ path, t: dict.share }}
       />
       <Suspense fallback={<div aria-busy className="mt-8 h-40 animate-pulse rounded-xl bg-bg-elevated" />}>
         <TopPlayers slug={challenge.slug} locale={locale} t={dict.play} />

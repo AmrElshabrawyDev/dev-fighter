@@ -4,10 +4,11 @@ import { Suspense } from "react";
 import { PlayerName } from "@/components/PlayerName";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
 import { getLeaderboard } from "@/lib/leaderboard";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { leaderboard: t } = await getDictionary();
-  return { title: t.title, description: t.metaDescription };
+  const { leaderboard: t, meta } = await getDictionary();
+  return pageMetadata({ locale: await getLocale(), path: "/leaderboard", title: t.title, description: t.metaDescription, siteTitle: meta.title });
 }
 
 const medal = ["text-gold", "text-text-secondary", "text-warning"];
@@ -71,7 +72,7 @@ async function Board() {
           <tr key={row.username} className="border-b border-border-subtle last:border-0">
             <td className={`px-4 py-3 font-mono font-bold ${medal[row.rank - 1] ?? "text-text-tertiary"}`}>#{row.rank}</td>
             <td className="px-2 py-3">
-              <PlayerName player={row} />
+              <PlayerName player={row} href={`/${locale}/u/${row.username}`} />
             </td>
             <td className="hidden px-2 py-3 text-end font-mono sm:table-cell">{row.perfect}</td>
             <td className="hidden px-2 py-3 text-end font-mono sm:table-cell">{row.played}</td>

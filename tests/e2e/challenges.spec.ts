@@ -21,6 +21,7 @@ test("the list shows every challenge and each card opens it", async ({ page }) =
 });
 
 test("reference solutions, hints and explanations never reach the browser", async ({ request }) => {
+  test.setTimeout(90_000); // ~60 pages
   // the most telling line of each solution (its longest), e.g. the clip-path of the hexagon,
   // and every hint and explanation in both languages
   const secrets = challenges.flatMap((c) => [

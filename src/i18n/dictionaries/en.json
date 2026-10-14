@@ -15,7 +15,8 @@
     "soon": "Soon",
     "switchTo": "العربية",
     "menu": "Menu",
-    "daily": "Daily"
+    "daily": "Daily",
+    "profile": "My profile"
   },
   "home": {
     "eyebrow": "The Arabic-first CSS battle arena",
@@ -136,7 +137,7 @@
     "copy": "Copy colour",
     "copied": "Copied",
     "match": "Match",
-    "estimate": "Instant estimate in your browser while you type. Official scoring and leaderboards come next.",
+    "estimate": "Instant estimate in your browser while you type. Submit for your official score.",
     "perfect": "Perfect match! Now try making your code shorter.",
     "unsupported": "This browser can't measure the match live. Try Chrome, Edge or Firefox.",
     "tipsLink": "Tips for shorter code",
@@ -238,5 +239,42 @@
   "notFound": {
     "title": "Page not found",
     "back": "Back home"
+  },
+  "share": {
+    "siteKicker": "CSS challenges",
+    "siteText": "Shapes and real UI · learning tracks · leaderboards",
+    "challengeKicker": "CSS challenge",
+    "prompt": "Can you draw it with the shortest code?",
+    "playerKicker": "Player profile",
+    "stats": {
+      "score": "Total score",
+      "rank": "Rank",
+      "perfect": "Perfect",
+      "played": "Played"
+    },
+    "empty": "No challenges solved yet. Start the first one!",
+    "button": "Share",
+    "copied": "Link copied",
+    "result": "I scored {score} points on “{title}” in Dev Fighter ({accuracy}% match, {chars} chars). Can you beat me?",
+    "challenge": "“{title}” on Dev Fighter: can you draw it with the shortest CSS?",
+    "profile": "My Dev Fighter profile: {score} points in CSS challenges.",
+    "imageAlt": "Share card: {title}"
+  },
+  "profile": {
+    "metaDescription": "{name} on Dev Fighter: {score} points, {perfect} perfect matches.",
+    "joined": "Joined {date}",
+    "score": "Total score",
+    "rank": "Overall rank",
+    "perfect": "Perfect matches",
+    "played": "Challenges played",
+    "solvedTitle": "Challenges played",
+    "best": "Best",
+    "chars": "chars",
+    "hints": "Hints: {n}",
+    "empty": "No solutions submitted yet.",
+    "tracksTitle": "Track progress",
+    "share": "Share your profile",
+    "notFoundTitle": "Player not found",
+    "notFoundText": "There's no player with this name. They may have changed it, or the link is wrong."
   }
 }

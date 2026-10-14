@@ -6,6 +6,7 @@ import { ChallengeCard } from "@/components/ChallengeCard";
 import { ProgressProvider, TrackProgress } from "@/components/progress/Progress";
 import { getTrack, toPublic, trackChallenges, tracks } from "@/data/challenges";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
+import { pageMetadata } from "@/lib/seo";
 
 export function generateStaticParams() {
   return tracks.map((t) => ({ slug: t.slug }));
@@ -15,7 +16,8 @@ export async function generateMetadata({ params }: PageProps<"/[lang]/tracks/[sl
   const track = getTrack((await params).slug);
   if (!track) return {};
   const locale = await getLocale();
-  return { title: track.title[locale], description: track.description[locale] };
+  const { meta } = await getDictionary();
+  return pageMetadata({ locale, path: `/tracks/${track.slug}`, title: track.title[locale], description: track.description[locale], siteTitle: meta.title });
 }
 
 export default function TrackPage({ params }: PageProps<"/[lang]/tracks/[slug]">) {

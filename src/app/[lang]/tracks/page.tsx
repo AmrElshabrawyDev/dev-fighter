@@ -4,10 +4,11 @@ import { TargetImage } from "@/components/TargetImage";
 import { ProgressProvider, TrackProgress } from "@/components/progress/Progress";
 import { toPublic, trackChallenges, tracks } from "@/data/challenges";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
+import { pageMetadata } from "@/lib/seo";
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { tracks: t } = await getDictionary();
-  return { title: t.title, description: t.subtitle };
+  const { tracks: t, meta } = await getDictionary();
+  return pageMetadata({ locale: await getLocale(), path: "/tracks", title: t.title, description: t.subtitle, siteTitle: meta.title });
 }
 
 export default async function TracksPage() {

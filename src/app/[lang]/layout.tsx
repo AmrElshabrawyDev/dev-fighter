@@ -3,6 +3,8 @@ import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { dir, locales } from "@/i18n/config";
 import { getDictionary, getLocale } from "@/i18n/get-dictionary";
+import { pageMetadata } from "@/lib/seo";
+import { siteUrl } from "@/lib/site";
 import "../globals.css";
 
 export async function generateStaticParams() {
@@ -13,10 +15,12 @@ export async function generateMetadata(): Promise<Metadata> {
   const { meta } = await getDictionary();
   const locale = await getLocale();
   return {
+    // the home page's metadata; every other page sets its own (see lib/seo)
+    ...pageMetadata({ locale, path: "", description: meta.description, siteTitle: meta.title }),
+    metadataBase: siteUrl,
     title: { default: meta.title, template: `%s · Dev Fighter` },
-    description: meta.description,
-    alternates: { languages: { ar: "/ar", en: "/en" } },
-    openGraph: { title: meta.title, description: meta.description, locale: locale === "ar" ? "ar_AR" : "en_US", type: "website" },
+    applicationName: "Dev Fighter",
+    authors: [{ name: "Amr Elshabrawy", url: "https://amrelshabrawydev.github.io" }],
   };
 }
 
